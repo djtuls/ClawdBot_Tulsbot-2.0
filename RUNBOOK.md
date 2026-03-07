@@ -81,6 +81,24 @@ One agent, multiple behavioral modes. Switch via Telegram command.
 
 Subagent policy: up to 8 concurrent subagents. Use them freely for parallel work. Always report what subagents returned.
 
+Autonomous execution directive (Tulio, 2026-03-07):
+
+- For every approved plan/task, Builder must execute phases proactively end-to-end without waiting for extra prompts.
+- Continue autonomously through all phases until completion.
+- Stop only when a true blocker exists (missing permission/credential/external dependency/explicit conflict).
+- On blocker, notify Tulio immediately with: blocker, impact, required decision, and fastest unblock option.
+- Maintain progress in the same task page (phase, done, blockers, next step, ETA) on every meaningful change and in daily recap.
+
+Builder reliability + verification directive (Tulio, 2026-03-07):
+
+- Builder must continuously patrol repo/tasks/chats/requests/ideas and proactively pick up safe actionable work 24/7.
+- No stale or recycled logs may be reported as fresh status.
+- Every report must include freshness checks and evidence-backed status (source path, timestamp, and run context).
+- Before reporting completion, Builder must run audit/test/probe steps proportional to task risk.
+- If verification fails or data confidence is low, mark as uncertain and investigate before reporting as done.
+- Builder owns carryover prevention: no request/task/idea can be left untracked.
+- Blocked tasks must be surfaced immediately to Tulio with explicit unblock request.
+
 ---
 
 ## 5. Discord-First Governance
@@ -219,6 +237,72 @@ Monitoring:
 
 - Guard emits `blocked-direct-super-inbox-seed` in `memory/event-log.jsonl`
 - Validation report path: `reports/notion/capture-flow-validation-YYYY-MM-DD.json`
+
+### 7.3 Email Label Policy (authoritative from Notion DB)
+
+Decision (2026-03-07): Capture Inbox email intake is governed by label policy stored in Notion. Existing working connections remain; no new HubSpot/Notion/Gmail MCP integration work is required for this policy.
+
+Rules:
+
+- Labels marked **Keep in Inbox** stay in Gmail inbox.
+- Labels marked **Skip Inbox** are excluded from inbox-preserving workflow.
+- Labels marked **Capture=true** are eligible for Capture Inbox ingestion.
+- Labels marked **Capture=false** are ignored by capture pipelines.
+
+No-duplicate requirement (hard invariant):
+
+- Never create duplicate capture rows for the same email/thread.
+- Primary dedup key: `provider + account + threadId`.
+- Secondary fallback key: `provider + account + messageId`.
+- Content hash fallback (last resort): normalized `from + subject + receivedAt + snippet`.
+- Before insert, router must upsert/check existing record by key; if found, update metadata only.
+- Any duplicate insert attempt must be logged to `memory/event-log.jsonl` as `dedup-skip`.
+
+Operational sequence:
+
+1. Notion Email Manager maintains label policy (`Keep in Inbox`, `Skip Inbox`, `Capture`).
+2. Backfill current inbox into Notion Email DB with dedup-on-write.
+3. Capture Inbox reads only policy-approved rows (`Capture=true`, `processed!=true`).
+4. On successful routing, mark source row as processed with timestamp + route target.
+
+Thread-page lifecycle (required):
+
+- One Notion page per email thread (stable key = `provider+account+threadId`).
+- New messages in same thread must update the existing page (never create a second page).
+- Append full message body history to the page body in chronological order, including inbound and outbound messages.
+- Track Tulio replies in the same thread page (direction field: inbound/outbound).
+- Maintain an AI summary block at the top of the page and refresh it after each new message.
+- AI summary must prioritize: latest status, pending asks, owner, next action, blockers, and aging/SLA risk.
+- Thread remains in Inbox while `status != sorted`.
+- When sorted/resolved, set status `sorted`, archive/move out of inbox per label policy, and preserve full thread history on the page.
+
+### 7.4 Plan/Task Lifecycle Governance (TODO-first, approved 2026-03-07)
+
+Authoritative policy set (Tulio directives):
+
+1. **Source of truth is `TODO.md` (Option B).**
+   - Keep `TODO.md` continuously synced with Notion `Tulsbot Tasks`.
+   - If drift is detected, reconcile immediately and report diff.
+2. **Never auto-cancel tasks.**
+   - Cancellation is allowed only with Tulio's explicit consent in chat.
+3. **No protected-task class.**
+   - All tasks are meant to be completed; no special immunity bucket.
+4. **Done definition is strict.**
+   - Mark `Done` only after runbook completion criteria are met **and**
+   - an **as-built report** is delivered and explicitly approved by Tulio.
+5. **In-progress policy is dependency-driven (no hard cap).**
+   - Choose active tasks based on dependency order and execution sense.
+
+Execution lifecycle:
+
+1. Maintain canonical checklist in `TODO.md`.
+2. Mirror to Notion `Tulsbot Tasks` without creating semantic duplicates.
+3. For plan reviews, use `Human in the Loop` until explicit approval.
+4. After approval, move to `In Progress` and update by phase.
+5. Before any status transition to `Done`, produce as-built report and request approval.
+6. If any ambiguity exists, ask before mutating status.
+
+Applies to all major initiatives unless Tulio explicitly overrides in chat.
 
 ---
 
