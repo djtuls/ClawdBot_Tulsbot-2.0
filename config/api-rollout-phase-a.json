@@ -1,13 +1,26 @@
 {
   "phase": "A",
-  "updatedAt": "2026-03-07T16:40:00+10:00",
-  "status": "planned-safe-scaffold",
+  "updatedAt": "2026-03-08T07:45:00+10:00",
+  "status": "in-progress",
+  "milestones": {
+    "driftBaseline": "completed",
+    "canonicalLabels": "completed",
+    "mergeArchiveMap": "completed",
+    "inboxCaptureBehavior": "completed",
+    "dedupInvariantPrep": "completed"
+  },
   "governance": {
     "draftOnlyOutbound": true,
     "approvalGate": {
       "enabled": true,
       "approveCommand": "APPROVE <id>",
       "rejectCommand": "REJECT <id>"
+    },
+    "invariants": {
+      "threadKey": "provider+account+threadId",
+      "messageKey": "provider+account+messageId",
+      "upsertOnly": true,
+      "unknownFallback": "To-Be-Sorted"
     }
   },
   "integrations": {

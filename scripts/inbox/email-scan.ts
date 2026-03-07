@@ -11,7 +11,15 @@ import { execFileSync } from "child_process";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { logEvent } from "../lib/event-logger.js";
-import { hashItem, isSeen, markSeen } from "../lib/inbox-dedup.js";
+import {
+  hashItem,
+  isSeen,
+  markSeen,
+  buildThreadKey,
+  buildMessageKey,
+  registerThreadKey,
+  registerMessageKey,
+} from "../lib/inbox-dedup.js";
 import { sendToTopic, truncateForTelegram } from "../lib/telegram-notify.js";
 
 const WORKSPACE =
@@ -91,8 +99,8 @@ function scanAccount(account: string): EmailMessage[] {
     }
 
     return threads.map((m: any) => ({
-      id: m.id || String(Math.random()),
-      threadId: m.id || "",
+      id: m.id || m.messageId || String(Math.random()),
+      threadId: m.threadId || m.id || "",
       from: m.from || "unknown",
       subject: m.subject || "(no subject)",
       snippet: (m.snippet || "").slice(0, 300),
@@ -247,8 +255,19 @@ async function main() {
     scanned += messages.length;
 
     for (const msg of messages) {
-      const hash = hashItem("email", `${msg.account}:${msg.id}`);
-      if (isSeen(hash) && !BACKFILL) {
+      const threadKey = buildThreadKey("gmail", msg.account, msg.threadId || msg.id);
+      const messageKey = buildMessageKey("gmail", msg.account, msg.id);
+      const hash = hashItem("email", messageKey);
+      const messageAlreadySeen = isSeen(hash) || registerMessageKey(messageKey, threadKey).exists;
+      registerThreadKey(threadKey);
+      if (messageAlreadySeen && !BACKFILL) {
+        logEvent({
+          source: "email-scan",
+          action: "dedup-skip",
+          target: `${msg.account}:${(msg.subject || "").slice(0, 70)}`,
+          result: "ok",
+          detail: `threadKey=${threadKey} messageKey=${messageKey}`,
+        });
         continue;
       }
 
@@ -274,6 +293,8 @@ async function main() {
           PENDING_PATH,
           JSON.stringify({
             ...msg,
+            threadKey,
+            messageKey,
             category: "action-required",
             hash,
             addedAt: new Date().toISOString(),
@@ -288,6 +309,8 @@ async function main() {
           PENDING_PATH,
           JSON.stringify({
             ...msg,
+            threadKey,
+            messageKey,
             category: "to-be-sorted",
             hash,
             addedAt: new Date().toISOString(),

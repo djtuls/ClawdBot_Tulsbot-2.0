@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "phase": "A",
+  "updatedAt": "2026-03-08T07:40:00+10:00",
+  "policy": {
+    "canonicalImmediateActionLabel": "🚨 Action Items",
+    "followUpSeparate": true,
+    "unknownFallback": "To-Be-Sorted",
+    "unknownNeverDropped": true,
+    "inftHubUmbrella": true,
+    "personalSublabelsAllowed": true,
+    "djtulsGenericOnly": true
+  },
+  "merge": {
+    "Action-Required": "🚨 Action Items",
+    "Action Required": "🚨 Action Items",
+    "WIP": "🚨 Action Items",
+    "Newsletters": "Subscriptions",
+    "Finance/Receipts": "Receipts",
+    "System-Build": "SYSTEM-BUILD",
+    "To be sorted": "To-Be-Sorted"
+  },
+  "archive": [
+    "Action-Required",
+    "Action Required",
+    "WIP",
+    "Newsletters",
+    "Finance/Receipts",
+    "System-Build",
+    "To be sorted"
+  ],
+  "captureByLabel": {
+    "🚨 Action Items": { "keepInInbox": true, "capture": true },
+    "Follow Up": { "keepInInbox": true, "capture": true },
+    "Reply": { "keepInInbox": true, "capture": true },
+    "Waiting": { "keepInInbox": true, "capture": true },
+    "In progress": { "keepInInbox": true, "capture": true },
+    "Done": { "keepInInbox": false, "capture": true },
+    "To-Be-Sorted": { "keepInInbox": true, "capture": true, "needsReview": true },
+    "Subscriptions": { "keepInInbox": false, "capture": false },
+    "Receipts": { "keepInInbox": false, "capture": true },
+    "Spam-Noise": { "keepInInbox": false, "capture": false }
+  }
+}

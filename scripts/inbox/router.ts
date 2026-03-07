@@ -49,6 +49,8 @@ const CONTROL = loadControlPlane();
 interface PendingItem {
   id?: string;
   threadId?: string;
+  threadKey?: string;
+  messageKey?: string;
   source: string;
   category: string;
   subject?: string;
