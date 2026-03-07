@@ -27,14 +27,6 @@ type BrainFileMetadata = {
   content: string;
 };
 
-type ConversationFile = {
-  id: string;
-  channel: string;
-  messageCount: number;
-  created: Date;
-  messages: Array<{ role: string; content: string }>;
-};
-
 /**
  * Parse AnythingLLM brain markdown file
  * Format:
@@ -74,43 +66,6 @@ function parseBrainFile(fileContent: string, fileName: string): BrainFileMetadat
 }
 
 /**
- * Parse AnythingLLM conversation markdown file
- */
-function _parseConversationFile(fileContent: string, fileName: string): ConversationFile {
-  const _lines = fileContent.split("\n");
-
-  const idMatch = fileContent.match(/# Conversation (.+?)$/m);
-  const channelMatch = fileContent.match(/\*\*Channel:\*\*\s*(.+?)$/m);
-  const messagesMatch = fileContent.match(/\*\*Messages:\*\*\s*(\d+)/m);
-  const createdMatch = fileContent.match(/\*\*Created:\*\*\s*(.+?)$/m);
-
-  // Extract messages (after ---)
-  const separatorIndex = fileContent.indexOf("\n---\n");
-  const messagesContent = separatorIndex >= 0 ? fileContent.slice(separatorIndex + 5).trim() : "";
-
-  // Parse user/assistant message pairs
-  const messages: Array<{ role: string; content: string }> = [];
-  const messageBlocks = messagesContent.split(/\n\*\*(user|assistant):\*\*\s*/);
-
-  for (let i = 1; i < messageBlocks.length; i += 2) {
-    if (i + 1 < messageBlocks.length) {
-      messages.push({
-        role: messageBlocks[i],
-        content: messageBlocks[i + 1].trim(),
-      });
-    }
-  }
-
-  return {
-    id: idMatch?.[1]?.trim() || fileName.replace(".md", ""),
-    channel: channelMatch?.[1]?.trim() || "unknown",
-    messageCount: messagesMatch ? parseInt(messagesMatch[1]) : messages.length,
-    created: createdMatch ? new Date(createdMatch[1].trim()) : new Date(),
-    messages,
-  };
-}
-
-/**
  * Convert brain file to OpenClaw memory markdown format
  */
 function convertToMemoryFormat(brain: BrainFileMetadata): string {
@@ -138,6 +93,7 @@ function convertToMemoryFormat(brain: BrainFileMetadata): string {
 function generateMemoryFileName(brain: BrainFileMetadata): string {
   const dateStr = brain.created.toISOString().split("T")[0]; // YYYY-MM-DD
   const slug = brain.title
+    .replace(/\.md$/i, "") // strip .md extension to prevent -md.md filenames
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
@@ -151,7 +107,6 @@ async function main() {
 
   const backupDir = path.join(PROJECT_ROOT, "anythingllm-sync-output");
   const brainDir = path.join(backupDir, "brain");
-  const _conversationsDir = path.join(backupDir, "conversations");
 
   // Determine workspace directory (use ~/.openclaw/workspace or create local test dir)
   const homeDir = process.env.HOME || process.env.USERPROFILE || "";

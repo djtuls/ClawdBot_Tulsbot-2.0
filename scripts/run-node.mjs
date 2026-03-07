@@ -152,25 +152,7 @@ if (!shouldBuild()) {
     if (code !== 0 && code !== null) {
       process.exit(code);
     }
-    // Fix circular __exportAll imports (gateway-cli ↔ chunks). Must run after tsdown.
-    const fixScript = spawn(
-      process.execPath,
-      ["--import", "tsx", "scripts/fix-pi-model-discovery-import.ts"],
-      {
-        cwd,
-        env,
-        stdio: "inherit",
-      },
-    );
-    fixScript.on("exit", (fixCode, fixSignal) => {
-      if (fixSignal) {
-        process.exit(1);
-      }
-      if (fixCode !== 0 && fixCode !== null) {
-        process.exit(fixCode);
-      }
-      writeBuildStamp();
-      runNode();
-    });
+    writeBuildStamp();
+    runNode();
   });
 }

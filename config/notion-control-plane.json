@@ -1,0 +1,20 @@
+{
+  "notion": {
+    "captureInboxDatabaseId": "30351bf9-731e-81f2-bc24-dca63220f567",
+    "superInboxDatabaseId": "61efc873-884b-4c11-925b-c096ba38ec55",
+    "crmContactsDatabaseId": "f3c32b0d-5b7d-4a05-82da-7ac306b64cf8",
+    "projectGridDatabaseId": "4bd8a8b2-5637-47c7-8ebd-33b0fb2f80ee",
+    "meetingsDatabaseId": "",
+    "whatsAppGroupsDatabaseId": "31c51bf9-731e-81e6-8fdd-c3edb8992d5e",
+    "captureHighlightsDatabaseId": "31c51bf9-731e-813d-9894-ef55d225c4c9",
+    "contactsCanonicalDatabaseId": "f3c32b0d-5b7d-4a05-82da-7ac306b64cf8",
+    "captureGovernanceDatabaseId": "31c51bf9-731e-8146-a3f6-ec0560767141"
+  },
+  "policy": {
+    "projectGridReadOnly": true,
+    "meetingsReadOnly": true,
+    "allowDirectSuperInboxWrites": false,
+    "enableCommandLoop": true,
+    "requirePreScreenBeforeSuperInbox": true
+  }
+}

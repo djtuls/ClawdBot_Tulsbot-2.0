@@ -12,13 +12,13 @@
         <string>/usr/local/bin/node</string>
         <string>--import</string>
         <string>tsx</string>
-        <string>/Users/tulioferro/Backend_local Macbook/openclaw_repo/scripts/sync-memory-cloud-bidirectional.ts</string>
+        <string>/Users/tulioferro/.openclaw/workspace/scripts/sync-memory-supabase.ts</string>
         <string>--watch</string>
     </array>
     
     <!-- Working Directory -->
     <key>WorkingDirectory</key>
-    <string>/Users/tulioferro/Backend_local Macbook/openclaw_repo</string>
+    <string>/Users/tulioferro/.openclaw/workspace</string>
     
     <!-- Environment Variables -->
     <key>EnvironmentVariables</key>

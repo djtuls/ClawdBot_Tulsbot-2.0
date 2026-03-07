@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.tulsbot.weekly-routing-digest</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>-c</string>
+    <string>cd /Users/tulioferro/.openclaw/workspace &amp;&amp; ./node_modules/.bin/tsx scripts/weekly-routing-digest.ts</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/tulioferro/.openclaw/workspace</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>HOME</key>
+    <string>/Users/tulioferro</string>
+  </dict>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Weekday</key>
+    <integer>1</integer>
+    <key>Hour</key>
+    <integer>9</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>/Users/tulioferro/.openclaw/logs/weekly-digest-stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/tulioferro/.openclaw/logs/weekly-digest-stderr.log</string>
+</dict>
+</plist>

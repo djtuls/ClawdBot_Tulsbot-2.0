@@ -16,29 +16,19 @@ BUILD_CONFIG="${BUILD_CONFIG:-release}"
 # Default to universal binary for distribution builds (supports both Apple Silicon and Intel Macs)
 export BUILD_ARCHS="${BUILD_ARCHS:-all}"
 
-EXISTING_APP_PATH="${MAC_APP_PATH:-}"
-if [[ -n "$EXISTING_APP_PATH" ]]; then
-  if [[ ! -d "$EXISTING_APP_PATH" ]]; then
-    echo "Error: MAC_APP_PATH is set but does not exist: $EXISTING_APP_PATH" >&2
-    exit 1
-  fi
-else
-  "$ROOT_DIR/scripts/package-mac-app.sh"
-  EXISTING_APP_PATH="$ROOT_DIR/dist/OpenClaw.app"
-fi
+"$ROOT_DIR/scripts/package-mac-app.sh"
 
-APP="$EXISTING_APP_PATH"
+APP="$ROOT_DIR/dist/OpenClaw.app"
 if [[ ! -d "$APP" ]]; then
   echo "Error: missing app bundle at $APP" >&2
   exit 1
 fi
 
 VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$APP/Contents/Info.plist" 2>/dev/null || echo "0.0.0")
-DIST_BASENAME="${MAC_DIST_BASENAME:-OpenClaw}"
-ZIP="$ROOT_DIR/dist/$DIST_BASENAME-$VERSION.zip"
-DMG="$ROOT_DIR/dist/$DIST_BASENAME-$VERSION.dmg"
-NOTARY_ZIP="$ROOT_DIR/dist/$DIST_BASENAME-$VERSION.notary.zip"
-DSYM_ZIP="$ROOT_DIR/dist/$DIST_BASENAME-$VERSION.dSYM.zip"
+ZIP="$ROOT_DIR/dist/OpenClaw-$VERSION.zip"
+DMG="$ROOT_DIR/dist/OpenClaw-$VERSION.dmg"
+NOTARY_ZIP="$ROOT_DIR/dist/OpenClaw-$VERSION.notary.zip"
+DSYM_ZIP="$ROOT_DIR/dist/OpenClaw-$VERSION.dSYM.zip"
 SKIP_NOTARIZE="${SKIP_NOTARIZE:-0}"
 NOTARIZE=1
 SKIP_DSYM="${SKIP_DSYM:-0}"

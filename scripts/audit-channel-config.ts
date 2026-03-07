@@ -85,9 +85,15 @@ function validateCredentialValue(value: unknown): ConfigStatus {
 function auditChannelAccount(
   plugin: ReturnType<typeof listChannelPlugins>[number],
   accountId: string,
-  cfg: Record<string, unknown>,
+  cfg: unknown,
 ): ChannelAccountAudit {
-  const channelConfig = cfg.channels?.[plugin.id];
+  const configObj = (cfg ?? {}) as { channels?: Record<string, unknown> };
+  const channelConfig = (configObj.channels?.[plugin.id] ?? {}) as {
+    accounts?: Record<string, unknown>;
+    enabled?: boolean;
+    name?: string;
+    [key: string]: unknown;
+  };
   const accountConfig = channelConfig?.accounts?.[accountId] ?? channelConfig;
 
   const enabled = accountConfig?.enabled !== false;

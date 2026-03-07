@@ -1,0 +1,41 @@
+{
+  "groupId": "-1003840777920",
+  "groupName": "Topics",
+  "dailyTokenBudget": 180000,
+  "crossTopicReservePct": 0.2,
+  "maxTopicsPerPool": 5,
+  "idleRetireHours": 12,
+  "thresholds": {
+    "tierA": {
+      "scoreMin": 80,
+      "messages24hMin": 20
+    },
+    "tierB": {
+      "scoreMin": 35,
+      "messages24hMin": 5
+    }
+  },
+  "topics": [
+    {
+      "threadId": 40,
+      "name": "Builder / Orchestration",
+      "critical": true,
+      "priorityScore": 92,
+      "defaultOwner": "builder"
+    },
+    {
+      "threadId": 1,
+      "name": "General",
+      "critical": false,
+      "priorityScore": 55,
+      "defaultOwner": "pool"
+    },
+    {
+      "threadId": 12,
+      "name": "Operations",
+      "critical": false,
+      "priorityScore": 60,
+      "defaultOwner": "pool"
+    }
+  ]
+}

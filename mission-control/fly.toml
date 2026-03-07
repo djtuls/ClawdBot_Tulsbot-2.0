@@ -1,0 +1,25 @@
+app = "tulsbot-mc"
+
+[build]
+args = { NEXT_PUBLIC_SUPABASE_URL = "https://zjdsdzndyobixzboegvz.supabase.co" }
+
+[env]
+NEXT_PUBLIC_SUPABASE_URL = "https://zjdsdzndyobixzboegvz.supabase.co"
+
+[processes]
+web = "node server.js"
+
+[[services]]
+http_checks = []
+internal_port = 3000
+processes = ["web"]
+protocol = "tcp"
+
+[[services.ports]]
+force_https = true
+handlers = ["http"]
+port = 80
+
+[[services.ports]]
+handlers = ["tls", "http"]
+port = 443

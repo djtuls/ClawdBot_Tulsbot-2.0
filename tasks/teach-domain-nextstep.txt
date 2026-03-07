@@ -1,0 +1,3 @@
+Next concrete step: Conduct a detailed analysis of active financial projects within Live Engine. Identify patterns across projects such as recurring challenges, bottlenecks, or opportunities to improve workflows. Based on this pattern analysis, propose actionable next steps to optimize project execution or address systemic issues.
+
+I will begin by listing all active financial projects associated with Live Engine, then gather relevant data from available project notes, task lists, discussions, and reports in the workspace. After this data collection, I will perform a qualitative analysis to extract common themes and next-step recommendations.

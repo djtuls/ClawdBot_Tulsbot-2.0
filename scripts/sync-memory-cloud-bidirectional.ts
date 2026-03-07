@@ -244,29 +244,12 @@ async function listNotebookLLMSources(): Promise<NotebookLLMSource[]> {
   }
 
   try {
-    const { stdout, error } = await execFileNoThrow("nlm", [
+    const { stdout } = await execFileNoThrow("nlm", [
       "source",
       "list",
       TULSBOT_NOTEBOOK_ID,
       "--json",
     ]);
-
-    // execFileNoThrow never throws — guard empty stdout before JSON.parse
-    // (occurs when nlm is not installed, not authenticated, or returns nothing)
-    if (!stdout || !stdout.trim()) {
-      if (error) {
-        const errMsg = error.message || String(error);
-        if (errMsg.includes("not authenticated")) {
-          throw error;
-        }
-        if (errMsg.includes("not found") || errMsg.includes("ENOENT")) {
-          // nlm CLI not installed — disable silently to stop log spam
-          console.warn("⚠️  nlm CLI not found — NotebookLLM sync disabled");
-          (process.env as Record<string, string>).TULSBOT_NOTEBOOK_ID = "";
-        }
-      }
-      return [];
-    }
 
     const sources = JSON.parse(stdout);
     return sources.map((s: unknown) => {

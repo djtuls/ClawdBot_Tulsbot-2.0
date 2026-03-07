@@ -172,7 +172,8 @@ async function syncOnce() {
       await syncMemoryToAnythingLLM(memoryPath, workspaceDir, brainDir);
       synced++;
     } catch (error: unknown) {
-      if (error instanceof Error && error.message?.includes("anythingllm-backup")) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("anythingllm-backup")) {
         skipped++;
       } else {
         console.error(`  ✗ Error syncing ${fileName}:`, error);

@@ -1,0 +1,27 @@
+{
+  "version": "2026-03-07",
+  "categories": [
+    "family",
+    "work",
+    "inft",
+    "sales",
+    "vendor",
+    "partner",
+    "media",
+    "friend",
+    "ignore",
+    "unknown"
+  ],
+  "routing": {
+    "family": { "route": "telegram", "priority": "high" },
+    "work": { "route": "notion", "priority": "high" },
+    "inft": { "route": "notion", "priority": "high" },
+    "sales": { "route": "hubspot", "priority": "normal" },
+    "vendor": { "route": "notion", "priority": "normal" },
+    "partner": { "route": "hubspot", "priority": "normal" },
+    "media": { "route": "manual-review", "priority": "normal" },
+    "friend": { "route": "telegram", "priority": "normal" },
+    "ignore": { "route": "archive", "priority": "low" },
+    "unknown": { "route": "manual-review", "priority": "normal" }
+  }
+}

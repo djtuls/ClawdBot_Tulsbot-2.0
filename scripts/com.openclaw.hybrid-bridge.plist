@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.openclaw.hybrid-bridge</string>
+
+    <!-- BRIDGE_SECRET is injected by setup-hybrid-bridge.sh before this plist is loaded.
+         Do NOT load this plist directly from the repo — always run the setup script first. -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/node</string>
+        <string>--import</string>
+        <string>tsx</string>
+        <string>scripts/hybrid-bridge.ts</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/tulioferro/.openclaw/workspace</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <key>StandardOutPath</key>
+    <string>/Users/tulioferro/.openclaw/logs/hybrid-bridge-stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/tulioferro/.openclaw/logs/hybrid-bridge-stderr.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/tulioferro</string>
+        <key>HYBRID_BRIDGE_PORT</key>
+        <string>8090</string>
+        <key>HYBRID_BRIDGE_HOST</key>
+        <string>0.0.0.0</string>
+        <!-- BRIDGE_SECRET: injected by setup-hybrid-bridge.sh — do not set manually here -->
+        <key>BRIDGE_SECRET</key>
+        <string>__BRIDGE_SECRET_PLACEHOLDER__</string>
+    </dict>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

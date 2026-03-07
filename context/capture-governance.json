@@ -1,0 +1,25 @@
+{
+  "defaults": {
+    "email": "Monitor",
+    "whatsapp": "Monitor",
+    "plaud": "Monitor",
+    "notes": "Monitor",
+    "notion": "Monitor"
+  },
+  "email": {
+    "senders": {},
+    "domains": {}
+  },
+  "whatsapp": {
+    "groups": {
+      "syd loc x rws onsite chat": "Monitor",
+      "pv4 updates": "Monitor",
+      "luke campbell": "Monitor"
+    }
+  },
+  "plaud": {
+    "flows": {
+      "default": "Monitor"
+    }
+  }
+}

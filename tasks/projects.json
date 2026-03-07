@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "projects": [
+    {
+      "id": "ios-rebuild",
+      "title": "Tulsbot IOS Rebuild",
+      "status": "completed",
+      "progress": 100,
+      "created": "2026-03-04",
+      "description": "Clean OS, Mission Control, cron system, unified logging"
+    },
+    {
+      "id": "mac-mini-hub",
+      "title": "Mac Mini Hub Migration",
+      "status": "completed",
+      "progress": 100,
+      "created": "2026-03-04",
+      "description": "Gateway, tunnel, Ollama, laptop thin client"
+    },
+    {
+      "id": "domain-knowledge",
+      "title": "Domain Knowledge Onboarding",
+      "status": "not_started",
+      "progress": 0,
+      "created": "2026-03-04",
+      "description": "Teach Tulsbot about Live Engine, Creative Tools, INFT projects"
+    },
+    {
+      "id": "knowledge-base",
+      "title": "Knowledge Base System",
+      "status": "not_started",
+      "progress": 0,
+      "created": "2026-03-04",
+      "description": "Article capture, embedding, search, cross-reference"
+    },
+    {
+      "id": "hubspot",
+      "title": "HubSpot CRM Setup & Pipeline",
+      "status": "in_progress",
+      "progress": 5,
+      "created": "2026-03-04",
+      "description": "Set up HubSpot as tracked project with pipeline, ownership, and execution workflow."
+    },
+    {
+      "id": "capture-inbox-os",
+      "title": "Capture Inbox OS",
+      "status": "in_progress",
+      "progress": 3,
+      "created": "2026-03-04",
+      "description": "Unified inbox automation + HITL triage + context routing to projects, Notion tasks, notes, requests, Plaud and meeting briefs."
+    }
+  ]
+}

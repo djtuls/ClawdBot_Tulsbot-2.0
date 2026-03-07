@@ -110,10 +110,11 @@ async function main() {
     console.log("   2. Start bidirectional sync (optional):");
     console.log("      pnpm tsx scripts/sync-anythingllm-bidirectional.ts --watch");
   } catch (error: unknown) {
-    console.error("\n❌ Reindex failed:", (error as Error).message);
-    if ((error as Error).stack) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("\n❌ Reindex failed:", message);
+    if (error instanceof Error && error.stack) {
       console.error("\nStack trace:");
-      console.error((error as Error).stack);
+      console.error(error.stack);
     }
     process.exit(1);
   } finally {

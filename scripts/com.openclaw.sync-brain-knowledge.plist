@@ -14,7 +14,7 @@
     </array>
 
     <key>WorkingDirectory</key>
-    <string>/Users/tulioferro/Backend_local Macbook/openclaw_repo</string>
+    <string>/Users/tulioferro/.openclaw/workspace</string>
 
     <!-- Run 3x/day: 9am, 2pm, 9pm -->
     <key>StartCalendarInterval</key>

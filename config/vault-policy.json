@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "vaultRole": "secondary-intelligence-layer",
+  "sourceOfTruth": {
+    "projects": "Notion",
+    "crm": "HubSpot",
+    "tasks": "Todoist",
+    "files": "Google Drive",
+    "system": "workspace/memory"
+  },
+  "sections": {
+    "tulio": {
+      "path": "Tulio",
+      "store": [
+        "decisions",
+        "commitments",
+        "project-briefs",
+        "meeting-summaries",
+        "weekly-strategy"
+      ]
+    },
+    "tulsbot": {
+      "path": "Tulsbot",
+      "store": ["playbooks", "ops-health", "learnings", "automation-rules", "ingestion-qa"]
+    }
+  },
+  "promotionRules": [
+    "has_task",
+    "has_decision",
+    "has_deadline",
+    "has_commitment",
+    "has_project_status_change"
+  ],
+  "suppressRules": [
+    "newsletter_marketing",
+    "transactional_non_finance",
+    "low_signal_banter",
+    "duplicate_forward",
+    "system_notification_no_action"
+  ],
+  "maintenance": {
+    "daily": ["ingest", "classify", "extract", "dedupe", "update-briefs"],
+    "weekly": ["merge-duplicates", "archive-stale", "refresh-links", "quality-report"],
+    "monthly": ["taxonomy-review", "rule-tuning", "log-compaction"]
+  }
+}

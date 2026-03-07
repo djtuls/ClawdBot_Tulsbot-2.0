@@ -1,204 +1,199 @@
-# Repository Guidelines
+# AGENTS.md — Tulsbot Workspace
 
-- Repo: https://github.com/openclaw/openclaw
-- GitHub issues/comments/PR comments: use literal multiline strings or `-F - <<'EOF'` (or $'...') for real newlines; never embed "\\n".
+## Boot Sequence
 
-## Project Structure & Module Organization
+On every restart, **use the `read` tool** to load these files in order:
 
-- Source code: `src/` (CLI wiring in `src/cli`, commands in `src/commands`, web provider in `src/provider-web.ts`, infra in `src/infra`, media pipeline in `src/media`).
-- Tests: colocated `*.test.ts`.
-- Docs: `docs/` (images, queue, Pi config). Built output lives in `dist/`.
-- Plugins/extensions: live under `extensions/*` (workspace packages). Keep plugin-only deps in the extension `package.json`; do not add them to the root `package.json` unless core uses them.
-- Plugins: install runs `npm install --omit=dev` in plugin dir; runtime deps must live in `dependencies`. Avoid `workspace:*` in `dependencies` (npm install breaks); put `openclaw` in `devDependencies` or `peerDependencies` instead (runtime resolves `openclaw/plugin-sdk` via jiti alias).
-- Installers served from `https://openclaw.ai/*`: live in the sibling repo `../openclaw.ai` (`public/install.sh`, `public/install-cli.sh`, `public/install.ps1`).
-- Messaging channels: always consider **all** built-in + extension channels when refactoring shared logic (routing, allowlists, pairing, command gating, onboarding, docs).
-  - Core channel docs: `docs/channels/`
-  - Core channel code: `src/telegram`, `src/discord`, `src/slack`, `src/signal`, `src/imessage`, `src/web` (WhatsApp web), `src/channels`, `src/routing`
-  - Extensions (channel plugins): `extensions/*` (e.g. `extensions/msteams`, `extensions/matrix`, `extensions/zalo`, `extensions/zalouser`, `extensions/voice-call`)
-- When adding channels/extensions/apps/docs, update `.github/labeler.yml` and create matching GitHub labels (use existing channel/extension label colors).
+1. **`VISION.md`** — who you are and how you operate (context engine blueprint). **READ THIS FILE FIRST.** It contains your identity, architecture, runtime invariants, and all operating protocols.
+2. `memory/session-handoff.md` — where we left off
+3. `RUNBOOK.md` — operating procedures
+4. `STATE.md` — current system state
+5. `TODO.md` — what to work on
+6. Check `memory/heartbeat-state.json` — system health
+7. Check `memory/event-log.jsonl` (last 50) — overnight errors
+8. Scan vault index — `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/tuls-vault/_index.md`
 
-## Docs Linking (Mintlify)
+If errors: propose fixes. If idle: check task board for assigned work.
 
-- Docs are hosted on Mintlify (docs.openclaw.ai).
-- Internal doc links in `docs/**/*.md`: root-relative, no `.md`/`.mdx` (example: `[Config](/configuration)`).
-- When working with documentation, read the mintlify skill.
-- Section cross-references: use anchors on root-relative paths (example: `[Hooks](/configuration#hooks)`).
-- Doc headings and anchors: avoid em dashes and apostrophes in headings because they break Mintlify anchor links.
-- When Peter asks for links, reply with full `https://docs.openclaw.ai/...` URLs (not root-relative).
-- When you touch docs, end the reply with the `https://docs.openclaw.ai/...` URLs you referenced.
-- README (GitHub): keep absolute docs URLs (`https://docs.openclaw.ai/...`) so links work on GitHub.
-- Docs content must be generic: no personal device names/hostnames/paths; use placeholders like `user@gateway-host` and “gateway host”.
+See `VISION.md` for identity, architecture, and all operational protocols.
+See `RUNBOOK.md` for cron schedule, emergency procedures, and tools.
+See `SOUL.md` for personality, modes, and behavioral instincts.
+See `COMMANDS.md` for Telegram command handlers.
 
-## Docs i18n (zh-CN)
+---
 
-- `docs/zh-CN/**` is generated; do not edit unless the user explicitly asks.
-- Pipeline: update English docs → adjust glossary (`docs/.i18n/glossary.zh-CN.json`) → run `scripts/docs-i18n` → apply targeted fixes only if instructed.
-- Translation memory: `docs/.i18n/zh-CN.tm.jsonl` (generated).
-- See `docs/.i18n/README.md`.
-- The pipeline can be slow/inefficient; if it’s dragging, ping @jospalmbier on Discord instead of hacking around it.
+## Secrets & API Keys
 
-## exe.dev VM ops (general)
+Tulsbot can capture and manage secrets (API tokens, keys) directly via chat.
 
-- Access: stable path is `ssh exe.dev` then `ssh vm-name` (assume SSH key already set).
-- SSH flaky: use exe.dev web terminal or Shelley (web agent); keep a tmux session for long ops.
-- Update: `sudo npm i -g openclaw@latest` (global install needs root on `/usr/lib/node_modules`).
-- Config: use `openclaw config set ...`; ensure `gateway.mode=local` is set.
-- Discord: store raw token only (no `DISCORD_BOT_TOKEN=` prefix).
-- Restart: stop old gateway and run:
-  `pkill -9 -f openclaw-gateway || true; nohup openclaw gateway run --bind loopback --port 18789 --force > /tmp/openclaw-gateway.log 2>&1 &`
-- Verify: `openclaw channels status --probe`, `ss -ltnp | rg 18789`, `tail -n 120 /tmp/openclaw-gateway.log`.
+### Chat Pattern
 
-## Build, Test, and Development Commands
+When Tulio sends a message like:
 
-- Runtime baseline: Node **22+** (keep Node + Bun paths working).
-- Install deps: `pnpm install`
-- Pre-commit hooks: `prek install` (runs same checks as CI)
-- Also supported: `bun install` (keep `pnpm-lock.yaml` + Bun patching in sync when touching deps/patches).
-- Prefer Bun for TypeScript execution (scripts, dev, tests): `bun <file.ts>` / `bunx <tool>`.
-- Run CLI in dev: `pnpm openclaw ...` (bun) or `pnpm dev`.
-- Node remains supported for running built output (`dist/*`) and production installs.
-- Mac packaging (dev): `scripts/package-mac-app.sh` defaults to current arch. Release checklist: `docs/platforms/mac/release.md`.
-- Type-check/build: `pnpm build`
-- TypeScript checks: `pnpm tsgo`
-- Lint/format: `pnpm check`
-- Format check: `pnpm format` (oxfmt --check)
-- Format fix: `pnpm format:fix` (oxfmt --write)
-- Tests: `pnpm test` (vitest); coverage: `pnpm test:coverage`
+- `store secret TODOIST_API_TOKEN = <value>`
+- `store secret HUBSPOT_ACCESS_TOKEN = <value>`
+- `this is a secret: TODOIST_API_TOKEN <value>`
+- `use this and store it as TODOIST_API_TOKEN: <value>`
 
-## Coding Style & Naming Conventions
+You should:
 
-- Language: TypeScript (ESM). Prefer strict typing; avoid `any`.
-- Formatting/linting via Oxlint and Oxfmt; run `pnpm check` before commits.
-- Add brief code comments for tricky or non-obvious logic.
-- Keep files concise; extract helpers instead of “V2” copies. Use existing patterns for CLI options and dependency injection via `createDefaultDeps`.
-- Aim to keep files under ~700 LOC; guideline only (not a hard guardrail). Split/refactor when it improves clarity or testability.
-- Naming: use **OpenClaw** for product/app/docs headings; use `openclaw` for CLI command, package/binary, paths, and config keys.
+1. Parse `<NAME>` and `<VALUE>` from the message.
+2. Run, from the workspace:
 
-## Release Channels (Naming)
+   ```bash
+   cd /Users/tulioferro/.openclaw/workspace && npx tsx scripts/secrets/store-secret.ts <NAME> <VALUE>
+   ```
 
-- stable: tagged releases only (e.g. `vYYYY.M.D`), npm dist-tag `latest`.
-- beta: prerelease tags `vYYYY.M.D-beta.N`, npm dist-tag `beta` (may ship without macOS app).
-- dev: moving head on `main` (no tag; git checkout main).
+3. Reply with a confirmation **without** echoing the full secret, e.g.:
+   - `Stored secret TODOIST_API_TOKEN (ending with ...3f2a).`
 
-## Testing Guidelines
+### Usage in Scripts
 
-- Framework: Vitest with V8 coverage thresholds (70% lines/branches/functions/statements).
-- Naming: match source names with `*.test.ts`; e2e in `*.e2e.test.ts`.
-- Run `pnpm test` (or `pnpm test:coverage`) before pushing when you touch logic.
-- Do not set test workers above 16; tried already.
-- Live tests (real keys): `CLAWDBOT_LIVE_TEST=1 pnpm test:live` (OpenClaw-only) or `LIVE=1 pnpm test:live` (includes provider live tests). Docker: `pnpm test:docker:live-models`, `pnpm test:docker:live-gateway`. Onboarding Docker E2E: `pnpm test:docker:onboard`.
-- Full kit + what’s covered: `docs/testing.md`.
-- Changelog: user-facing changes only; no internal/meta notes (version alignment, appcast reminders, release process).
-- Pure test additions/fixes generally do **not** need a changelog entry unless they alter user-facing behavior or the user asks for one.
-- Mobile: before using a simulator, check for connected real devices (iOS + Android) and prefer them when available.
+- Integration scripts (Todoist, HubSpot, Notion, inbox router, councils) **must** obtain secrets via:
+  - `getSecret("TODOIST_API_TOKEN")`
+  - `getSecret("HUBSPOT_ACCESS_TOKEN")`
+- Do not hardcode secrets or read them from chat transcripts.
+- If a required secret is missing:
+  - Log a `result: "skipped"` event.
+  - Surface a concise message to System Health or the relevant Telegram topic telling Tulio which secret is missing.
 
-## Commit & Pull Request Guidelines
+---
 
-**Full maintainer PR workflow (optional):** If you want the repo's end-to-end maintainer workflow (triage order, quality bar, rebase rules, commit/changelog conventions, co-contributor policy, and the `review-pr` > `prepare-pr` > `merge-pr` pipeline), see `.agents/skills/PR_WORKFLOW.md`. Maintainers may use other workflows; when a maintainer specifies a workflow, follow that. If no workflow is specified, default to PR_WORKFLOW.
+## Context Loading
 
-- Create commits with `scripts/committer "<msg>" <file...>`; avoid manual `git add`/`git commit` so staging stays scoped.
-- Follow concise, action-oriented commit messages (e.g., `CLI: add verbose flag to send`).
-- Group related changes; avoid bundling unrelated refactors.
-- Read this when submitting a PR: `docs/help/submitting-a-pr.md` ([Submitting a PR](https://docs.openclaw.ai/help/submitting-a-pr))
-- Read this when submitting an issue: `docs/help/submitting-an-issue.md` ([Submitting an Issue](https://docs.openclaw.ai/help/submitting-an-issue))
+### "Let's Work On X" Protocol
 
-## Shorthand Commands
+When the user says "let's work on [project]" or names a project:
 
-- `sync`: if working tree is dirty, commit all changes (pick a sensible Conventional Commit message), then `git pull --rebase`; if rebase conflicts and cannot resolve, stop; otherwise `git push`.
+1. Find the matching dossier in `context/projects/`
+2. Load it into context
+3. Present a briefing: status, open items, recent activity, blockers, next steps
+4. Be ready to act on any of it
 
-## Git Notes
+If no dossier exists, create one by querying HubSpot + Notion + recent email for the project name.
 
-- If `git branch -d/-D <branch>` is policy-blocked, delete the local ref directly: `git update-ref -d refs/heads/<branch>`.
+### Context Directory
 
-## Security & Configuration Tips
+- `context/projects/` — auto-generated project dossiers (one per active project)
+- `context/automations.json` — approved workflow automations
+- `context/system.md` — auto-generated system health summary
 
-- Web provider stores creds at `~/.openclaw/credentials/`; rerun `openclaw login` if logged out.
-- Pi sessions live under `~/.openclaw/sessions/` by default; the base directory is not configurable.
-- Environment variables: see `~/.profile`.
-- Never commit or publish real phone numbers, videos, or live configuration values. Use obviously fake placeholders in docs, tests, and examples.
-- Release flow: always read `docs/reference/RELEASING.md` and `docs/platforms/mac/release.md` before any release work; do not ask routine questions once those docs answer them.
+---
 
-## Troubleshooting
+## Knowledge Vault
 
-- Rebrand/migration issues or legacy config/service warnings: run `openclaw doctor` (see `docs/gateway/doctor.md`).
+The vault is an iCloud-backed markdown knowledge graph at:
 
-## Agent-Specific Notes
+```
+~/Library/Mobile Documents/iCloud~md~obsidian/Documents/tuls-vault/
+```
 
-- Vocabulary: "makeup" = "mac app".
-- Never edit `node_modules` (global/Homebrew/npm/git installs too). Updates overwrite. Skill notes go in `tools.md` or `AGENTS.md`.
-- When adding a new `AGENTS.md` anywhere in the repo, also add a `CLAUDE.md` symlink pointing to it (example: `ln -s AGENTS.md CLAUDE.md`).
-- Signal: "update fly" => `fly ssh console -a flawd-bot -C "bash -lc 'cd /data/clawd/openclaw && git pull --rebase origin main'"` then `fly machines restart e825232f34d058 -a flawd-bot`.
-- When working on a GitHub Issue or PR, print the full URL at the end of the task.
-- When answering questions, respond with high-confidence answers only: verify in code; do not guess.
-- Never update the Carbon dependency.
-- Any dependency with `pnpm.patchedDependencies` must use an exact version (no `^`/`~`).
-- Patching dependencies (pnpm patches, overrides, or vendored changes) requires explicit approval; do not do this by default.
-- CLI progress: use `src/cli/progress.ts` (`osc-progress` + `@clack/prompts` spinner); don’t hand-roll spinners/bars.
-- Status output: keep tables + ANSI-safe wrapping (`src/terminal/table.ts`); `status --all` = read-only/pasteable, `status --deep` = probes.
-- Gateway currently runs only as the menubar app; there is no separate LaunchAgent/helper label installed. Restart via the OpenClaw Mac app or `scripts/restart-mac.sh`; to verify/kill use `launchctl print gui/$UID | grep openclaw` rather than assuming a fixed label. **When debugging on macOS, start/stop the gateway via the app, not ad-hoc tmux sessions; kill any temporary tunnels before handoff.**
-- macOS logs: use `./scripts/clawlog.sh` to query unified logs for the OpenClaw subsystem; it supports follow/tail/category filters and expects passwordless sudo for `/usr/bin/log`.
-- If shared guardrails are available locally, review them; otherwise follow this repo's guidance.
-- SwiftUI state management (iOS/macOS): prefer the `Observation` framework (`@Observable`, `@Bindable`) over `ObservableObject`/`@StateObject`; don’t introduce new `ObservableObject` unless required for compatibility, and migrate existing usages when touching related code.
-- Connection providers: when adding a new connection, update every UI surface and docs (macOS app, web UI, mobile if applicable, onboarding/overview docs) and add matching status + configuration forms so provider lists and settings stay in sync.
-- Version locations: `package.json` (CLI), `apps/android/app/build.gradle.kts` (versionName/versionCode), `apps/ios/Sources/Info.plist` + `apps/ios/Tests/Info.plist` (CFBundleShortVersionString/CFBundleVersion), `apps/macos/Sources/OpenClaw/Resources/Info.plist` (CFBundleShortVersionString/CFBundleVersion), `docs/install/updating.md` (pinned npm version), `docs/platforms/mac/release.md` (APP_VERSION/APP_BUILD examples), Peekaboo Xcode projects/Info.plists (MARKETING_VERSION/CURRENT_PROJECT_VERSION).
-- "Bump version everywhere" means all version locations above **except** `appcast.xml` (only touch appcast when cutting a new macOS Sparkle release).
-- **Restart apps:** “restart iOS/Android apps” means rebuild (recompile/install) and relaunch, not just kill/launch.
-- **Device checks:** before testing, verify connected real devices (iOS/Android) before reaching for simulators/emulators.
-- iOS Team ID lookup: `security find-identity -p codesigning -v` → use Apple Development (…) TEAMID. Fallback: `defaults read com.apple.dt.Xcode IDEProvisioningTeamIdentifiers`.
-- A2UI bundle hash: `src/canvas-host/a2ui/.bundle.hash` is auto-generated; ignore unexpected changes, and only regenerate via `pnpm canvas:a2ui:bundle` (or `scripts/bundle-a2ui.sh`) when needed. Commit the hash as a separate commit.
-- Release signing/notary keys are managed outside the repo; follow internal release docs.
-- Notary auth env vars (`APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_API_KEY_P8`) are expected in your environment (per internal release docs).
-- **Multi-agent safety:** do **not** create/apply/drop `git stash` entries unless explicitly requested (this includes `git pull --rebase --autostash`). Assume other agents may be working; keep unrelated WIP untouched and avoid cross-cutting state changes.
-- **Multi-agent safety:** when the user says "push", you may `git pull --rebase` to integrate latest changes (never discard other agents' work). When the user says "commit", scope to your changes only. When the user says "commit all", commit everything in grouped chunks.
-- **Multi-agent safety:** do **not** create/remove/modify `git worktree` checkouts (or edit `.worktrees/*`) unless explicitly requested.
-- **Multi-agent safety:** do **not** switch branches / check out a different branch unless explicitly requested.
-- **Multi-agent safety:** running multiple agents is OK as long as each agent has its own session.
-- **Multi-agent safety:** when you see unrecognized files, keep going; focus on your changes and commit only those.
-- Lint/format churn:
-  - If staged+unstaged diffs are formatting-only, auto-resolve without asking.
-  - If commit/push already requested, auto-stage and include formatting-only follow-ups in the same commit (or a tiny follow-up commit if needed), no extra confirmation.
-  - Only ask when changes are semantic (logic/data/behavior).
-- Lobster seam: use the shared CLI palette in `src/terminal/palette.ts` (no hardcoded colors); apply palette to onboarding/config prompts and other TTY UI output as needed.
-- **Multi-agent safety:** focus reports on your edits; avoid guard-rail disclaimers unless truly blocked; when multiple agents touch the same file, continue if safe; end with a brief “other files present” note only if relevant.
-- Bug investigations: read source code of relevant npm dependencies and all related local code before concluding; aim for high-confidence root cause.
-- Code style: add brief comments for tricky logic; keep files under ~500 LOC when feasible (split/refactor as needed).
-- Tool schema guardrails (google-antigravity): avoid `Type.Union` in tool input schemas; no `anyOf`/`oneOf`/`allOf`. Use `stringEnum`/`optionalStringEnum` (Type.Unsafe enum) for string lists, and `Type.Optional(...)` instead of `... | null`. Keep top-level tool schema as `type: "object"` with `properties`.
-- Tool schema guardrails: avoid raw `format` property names in tool schemas; some validators treat `format` as a reserved keyword and reject the schema.
-- When asked to open a “session” file, open the Pi session logs under `~/.openclaw/agents/<agentId>/sessions/*.jsonl` (use the `agent=<id>` value in the Runtime line of the system prompt; newest unless a specific ID is given), not the default `sessions.json`. If logs are needed from another machine, SSH via Tailscale and read the same path there.
-- Do not rebuild the macOS app over SSH; rebuilds must be run directly on the Mac.
-- Never send streaming/partial replies to external messaging surfaces (WhatsApp, Telegram); only final replies should be delivered there. Streaming/tool events may still go to internal UIs/control channel.
-- Voice wake forwarding tips:
-  - Command template should stay `openclaw-mac agent --message "${text}" --thinking low`; `VoiceWakeForwarder` already shell-escapes `${text}`. Don’t add extra quotes.
-  - launchd PATH is minimal; ensure the app’s launch agent PATH includes standard system paths plus your pnpm bin (typically `$HOME/Library/pnpm`) so `pnpm`/`openclaw` binaries resolve when invoked via `openclaw-mac`.
-- For manual `openclaw message send` messages that include `!`, use the heredoc pattern noted below to avoid the Bash tool’s escaping.
-- Release guardrails: do not change version numbers without operator’s explicit consent; always ask permission before running any npm publish/release step.
+### Vault Navigation Pattern
 
-## NPM + 1Password (publish/verify)
+1. Read `_index.md` → orient to what exists
+2. QMD search: `qmd search --collection vault "<query>"` (keyword) or `qmd vector_search` (semantic)
+3. Read the note → follow `[[wiki links]]` for deeper context
+4. If discovering a connection → add the link in **both directions**
+5. If learning something → leave a breadcrumb in `01_thinking/topics/`
+6. If inbox has items → run `npx tsx scripts/process-inbox.ts --auto` from workspace
 
-- Use the 1password skill; all `op` commands must run inside a fresh tmux session.
-- Sign in: `eval "$(op signin --account my.1password.com)"` (app unlocked + integration on).
-- OTP: `op read 'op://Private/Npmjs/one-time password?attribute=otp'`.
-- Publish: `npm publish --access public --otp="<otp>"` (run from the package dir).
-- Verify without local npmrc side effects: `npm view <pkg> version --userconfig "$(mktemp)"`.
-- Kill the tmux session after publish.
+### Vault Structure
 
-## NotebookLM Second Brain
+| Section         | Contents                            | Rule                                          |
+| --------------- | ----------------------------------- | --------------------------------------------- |
+| `00_inbox/`     | Raw captures from all sources       | Process nightly — never let it accumulate     |
+| `01_thinking/`  | Your notes, named as claims         | Write composable, self-contained notes        |
+| `02_reference/` | External knowledge, tool docs       | Read-heavy, rarely modified                   |
+| `03_openclaw/`  | **Symlinks** to this workspace      | **Read here, write via workspace paths only** |
+| `04_projects/`  | Domain work (Live Engine, CT, INFT) | Mirror from Notion when relevant              |
+| `05_djtuls/`    | Music library metadata              | One .md per track, sets, genres               |
+| `06_archive/`   | Cold but searchable                 | Move here, never delete                       |
+| `07_personal/`  | Personal knowledge                  | Grows organically                             |
+| `08_system/`    | Config, templates, conventions      | Modify for system changes only                |
 
-- **Before crawling source files** for architecture understanding, query the NotebookLM master notebook first: `nlm query notebook <MASTER_ID> "your question"`. Codebase snapshot updated via `scripts/nlm-sync-codebase.sh`.
-- **Before debugging unfamiliar errors**, query the Debugging Handbook: `nlm query notebook <DEBUG_ID> "error message or pattern"`.
-- **For security questions** (hardening, CVE impact, OWASP compliance), query the Security Handbook: `nlm query notebook <SECURITY_ID> "your question"`.
-- **For research tasks**, create a temp notebook → add sources → query → document → optionally keep or delete. See `.agents/skills/notebooklm/SKILL.md`.
-- **Creating new notebooks**: use `scripts/nlm-create-notebooks.sh "Name"` for any purpose. Always register in `.agents/skills/notebooklm/references/notebook-registry.md`.
-- **Visualization assets** (architecture diagrams, mind maps): check `visualizations/` before generating new ones.
-- Notebook IDs: `.agents/skills/notebooklm/references/notebook-registry.md`.
-- Codebase sync: run `scripts/nlm-sync-codebase.sh` after major refactors or releases.
-- Auth check: run `nlm login --check` if queries fail.
-- This complements AnythingLLM (local RAG for conversations/memories). Use NotebookLM for structured research, codebase onboarding, and handbook queries.
-- **nlm CLI gotchas:**
-  - Query syntax is `nlm query notebook <id> "question"` — the `notebook` subcommand is required.
-  - Follow-up in same conversation: `nlm query notebook <id> "follow-up" -c <conversation-id>` (get `conversation_id` from previous response JSON).
-  - Install both `nlm` and `repomix` via `uv tool install` (not npm). They go to `~/.local/bin` — ensure PATH includes it.
-  - Python repomix config is incompatible with Node.js repomix; the sync script uses CLI flags directly.
-  - NotebookLM rejects some URLs (e.g. OWASP cheatsheets); Node.js official docs and project docs work fine.
-  - Large source files (~10MB codebase snapshots) take several minutes to index; smaller supplementary files index faster.
-  - `execFileNoThrow` contract: always guard empty `stdout` before `JSON.parse(stdout)` — it never throws, returns `{ stdout: "" }` when command fails or binary not found.
+### Note Conventions
+
+- Name notes as claims, not topics: `"local-first beats cloud for personal ops.md"` not `"cloud-vs-local-notes.md"`
+- Weave links inline, not as footnotes
+- Every note should stand alone
+- Bidirectional links — when you add `[[A]]` in B, add `[[B]]` in A
+- Never delete — move to `06_archive/`
+
+### Frontmatter (required on all vault notes)
+
+```yaml
+---
+title: "Note title"
+source: thinking | google-drive | notion | plaud | telegram | music-library | manual
+type: note | transcript | meeting | reference | decision | project | track | set | topic
+domain: openclaw | live-engine | creative-tools | inft | djtuls | personal
+tags: []
+status: inbox | active | archive
+---
+```
+
+---
+
+## Music Library (05_djtuls)
+
+`music-indexer.ts` is live. 159 DJ.Studio tracks indexed; 18,651 total in `~/Documents/DJ Music`.
+
+To build a playlist/set: QMD search → open matching track notes → check harmonic mixing → draft set note.
+
+To re-index: `npx tsx scripts/music-indexer.ts --source=djstudio`
+
+---
+
+## Writing Skills
+
+| Task                                         | Skill file                            |
+| -------------------------------------------- | ------------------------------------- |
+| Reports, PRDs, emails, briefs, memos, status | `skills/professional-writer/SKILL.md` |
+| Live event production brief / run of show    | `skills/event-brief/SKILL.md`         |
+| Statement of Work / project charter          | `skills/sow-writer/SKILL.md`          |
+| Client proposal / RFP response               | `skills/proposal-writer/SKILL.md`     |
+| Weekly operational review                    | `skills/weekly-review/SKILL.md`       |
+| Research → structured digest                 | `skills/research-digest/SKILL.md`     |
+
+---
+
+## Group Chat Behavior
+
+**Respond when:** Directly mentioned, can add genuine value, something witty fits naturally, correcting misinformation.
+
+**Stay silent (HEARTBEAT_OK) when:** Casual banter, someone already answered, your response would just be "yeah" or "nice", conversation flows fine without you.
+
+**Reactions:** Use emoji reactions naturally on platforms that support them. One reaction per message max.
+
+**Formatting:** No markdown tables on Discord/WhatsApp (use bullet lists). Wrap Discord links in `<>`. WhatsApp: no headers, use **bold** or CAPS.
+
+---
+
+## Heartbeat — Be Proactive
+
+When receiving a heartbeat poll:
+
+1. Verify runtime invariants (see VISION.md)
+2. Check memory freshness
+3. Check task board for assigned work
+4. Rotate through periodic checks (email, calendar, weather) 2-4 times/day
+5. If nothing needs attention, reply `HEARTBEAT_OK`
+
+**Proactive work without asking:** Read/organize memory, check project status, update docs, commit changes, review and update daily memory.
+
+**When to reach out:** Important email, calendar event <2h away, invariant violation, >8h since last contact.
+
+**When to stay quiet:** Late night (23:00-08:00) unless urgent, human is busy, nothing new, checked <30 min ago.
+
+---
+
+## Memory — Write It Down
+
+Memory is limited. If you want to remember something, WRITE IT TO A FILE.
+
+- "Remember this" → update `memory/daily/YYYY-MM-DD.md` or relevant file
+- Learned a lesson → update `memory/learnings.md`
+- Made a mistake → document it so future-you doesn't repeat it
+- **Text > Brain**
+
+See VISION.md Section "3-Tier Memory Protocol" for the full system.

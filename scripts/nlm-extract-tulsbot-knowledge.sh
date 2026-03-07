@@ -19,23 +19,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DEFAULT_TULSBOT_ROOT="$REPO_ROOT/Tulsbot"
-LEGACY_TULSBOT_ROOT="$HOME/Backend_local Macbook/Tulsbot"
-
-# Allow callers to override TULSBOT_ROOT, otherwise prefer the repo-local path
-# (falling back to the historical location under $HOME for contributor setups).
-if [ -z "${TULSBOT_ROOT:-}" ]; then
-  if [ -d "$DEFAULT_TULSBOT_ROOT" ]; then
-    TULSBOT_ROOT="$DEFAULT_TULSBOT_ROOT"
-  elif [ -d "$LEGACY_TULSBOT_ROOT" ]; then
-    TULSBOT_ROOT="$LEGACY_TULSBOT_ROOT"
-  else
-    # Leave it pointed at the repo-local path so the error message below is
-    # still accurate even if the directory is missing.
-    TULSBOT_ROOT="$DEFAULT_TULSBOT_ROOT"
-  fi
-fi
-
+TULSBOT_ROOT="${TULSBOT_ROOT:-$HOME/Backend_local Macbook/Tulsbot}"
 KNOWLEDGE_JSON="$TULSBOT_ROOT/.tulsbot/core-app-knowledge.json"
 OUTPUT_DIR="$REPO_ROOT/knowledge-slices"
 

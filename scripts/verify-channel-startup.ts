@@ -121,7 +121,7 @@ async function verifyChannelStartup(opts: VerificationOptions): Promise<StartupV
     // Step 3: Verify channel startup (if not skipped)
     if (!opts.skipChannels) {
       console.log(`${colors.blue}🔌 Verifying channel startup...${colors.reset}`);
-      const channelResults = await verifyChannelStatus(port, opts);
+      const channelResults = await verifyChannelStatus();
       result.channelResults = channelResults;
 
       const channelFailures = channelResults.filter((r) => !r.success);
@@ -208,10 +208,7 @@ async function waitForGatewayReady(port: number, timeoutMs: number): Promise<boo
   return false;
 }
 
-async function verifyChannelStatus(
-  _port: number,
-  _opts: VerificationOptions,
-): Promise<ChannelStartupResult[]> {
+async function verifyChannelStatus(): Promise<ChannelStartupResult[]> {
   const results: ChannelStartupResult[] = [];
 
   try {

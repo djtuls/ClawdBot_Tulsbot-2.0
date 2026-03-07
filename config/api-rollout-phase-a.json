@@ -1,0 +1,38 @@
+{
+  "phase": "A",
+  "updatedAt": "2026-03-07T16:40:00+10:00",
+  "status": "planned-safe-scaffold",
+  "governance": {
+    "draftOnlyOutbound": true,
+    "approvalGate": {
+      "enabled": true,
+      "approveCommand": "APPROVE <id>",
+      "rejectCommand": "REJECT <id>"
+    }
+  },
+  "integrations": {
+    "hubspotMcp": {
+      "target": "contacts/deals create-update from agent workflows",
+      "state": "not_configured",
+      "requiredSecrets": ["HUBSPOT_ACCESS_TOKEN"],
+      "compatSecrets": ["HUBSPOT_PRIVATE_APP_TOKEN"]
+    },
+    "notionMcp": {
+      "target": "project notes/briefs sync for INFT Hub",
+      "state": "partially_configured",
+      "requiredSecrets": ["NOTION_KEY", "NOTION_AGENT_REGISTRY_DB"],
+      "compatSecrets": ["NOTION_API_KEY", "NOTION_TOKEN_OPENCLAW_2"]
+    },
+    "gmailMcp": {
+      "target": "draft-first outbound + thread triage",
+      "state": "not_configured",
+      "requiredSecrets": [
+        "TULSBOT_GMAIL_CLIENT_ID",
+        "TULSBOT_GMAIL_CLIENT_SECRET",
+        "TULSBOT_GMAIL_REFRESH_TOKEN",
+        "TULSBOT_GMAIL_ADDRESS"
+      ],
+      "compatSecrets": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN"]
+    }
+  }
+}
