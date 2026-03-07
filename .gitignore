@@ -102,3 +102,24 @@ openclaw.json
 
 # Brain knowledge sync runtime state
 .sync-state.db
+
+# Local runtime/build artifacts (worktree hygiene)
+.openclaw/
+logs/
+firebase-debug.log
+notion_day_planner.json
+Mission_Control_Mock.pdf
+
+# Mission Control local build/cache files
+mission-control/.env.local
+mission-control/.next/
+mission-control/package-lock.json
+
+# Local shadow docs (kept in active workspace context, not git)
+HEARTBEAT.md
+SOUL.md
+TOOLS.md
+
+# Local councils/output folders
+council/
+archive/2026-03-02-pre-cleanup/
