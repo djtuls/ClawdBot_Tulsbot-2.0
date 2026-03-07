@@ -22,9 +22,7 @@ const RECON_FINANCIALS = "1r38BKm9rzciwywEchh3PmLfrzxzw3nRE";
 const OPS_ROOT = "1GoTS-xbB2AGa9BQnq9ah2FL3SeXfOuAt";
 const WIP_OPS = "10RBgjhgeQ9kF9BS92TYZAbWYgP5lq056";
 
-function gogDriveLs(
-  parentId: string,
-): Array<{
+function gogDriveLs(parentId: string): Array<{
   id: string;
   name: string;
   mimeType: string;
