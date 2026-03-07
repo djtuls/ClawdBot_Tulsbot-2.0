@@ -1,27 +1,6 @@
 #!/usr/bin/env tsx
 /**
  * refresh-state.ts — Rebuild STATE.md from authoritative sources
- *
- * Reads live data from:
- *   - memory/heartbeat-state.json (system health)
- *   - memory/tulsday-processed-context.json (priorities, blockers)
- *   - TODO.md (open items)
- *   - memory/shift-config.json (shift info)
- *   - Notion Dashboard (agent count via sync-notion-dashboard output)
- *
- * Writes a clean, minimal STATE.md per Tulsbot's directive:
- *   - Identity & mode (~5 lines)
- *   - Current focus (top 3 priorities)
- *   - Critical blockers
- *   - Active threads (high-level, max 5)
- *   - System health (1-line heartbeat status)
- *
- * Target: <60 lines. Fast to read on every agent boot.
- *
- * Usage:
- *   npx tsx scripts/refresh-state.ts
- *   npx tsx scripts/refresh-state.ts --dry-run   (prints to stdout, no write)
- *   npx tsx scripts/refresh-state.ts --quiet
  */
 
 import fs from "node:fs/promises";
@@ -30,6 +9,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORKSPACE = path.resolve(__dirname, "..");
+const OPENCLAW_HOME = path.resolve(WORKSPACE, "..", "agents");
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const QUIET = process.argv.includes("--quiet");
@@ -40,9 +20,7 @@ function log(...args: unknown[]) {
   }
 }
 
-// ─── Readers ─────────────────────────────────────────────────────────────────
-
-async function readJson(filePath: string): Promise<unknown> {
+async function readJson(filePath: string): Promise<any> {
   try {
     return JSON.parse(await fs.readFile(filePath, "utf8"));
   } catch {
@@ -75,6 +53,7 @@ async function getHeartbeatHealth(): Promise<HeartbeatHealth> {
   const failures: string[] = [];
   let pass = 0;
   let fail = 0;
+
   for (const [key, val] of Object.entries(tasks)) {
     if ((val as Record<string, unknown>).status === "SUCCEEDED") {
       pass++;
@@ -87,33 +66,31 @@ async function getHeartbeatHealth(): Promise<HeartbeatHealth> {
   return { lastRun: hb.lastRun || "unknown", passCount: pass, failCount: fail, failures };
 }
 
-interface Priorities {
-  focus: string[];
-  blockers: string[];
-}
-
-async function getPriorities(): Promise<Priorities> {
+async function getPriorities(): Promise<{ focus: string[]; blockers: string[] }> {
   const todo = await readText(path.join(WORKSPACE, "TODO.md"));
+  const lines = todo.split("\n");
   const focus: string[] = [];
   const blockers: string[] = [];
 
-  // Extract open items from TODO.md grouped by priority section
-  const lines = todo.split("\n");
   let currentSection = "";
   for (const line of lines) {
     if (line.startsWith("## ")) {
       currentSection = line;
     }
     const match = line.match(/^- \[ \]\s+(.+)/);
-    if (match) {
-      const item = match[1].replace(/\s*\(.*?\)\s*$/, "").trim();
-      if (currentSection.includes("High") && focus.length < 3) {
-        focus.push(item);
-      }
+    if (!match) {
+      continue;
+    }
+
+    const item = match[1].replace(/\s*\(.*?\)\s*$/, "").trim();
+    if (currentSection.includes("High") && focus.length < 3) {
+      focus.push(item);
+    }
+    if (/block(er|ed|ing)/i.test(line)) {
+      blockers.push(item);
     }
   }
 
-  // If no high-priority items, take first 3 open items from anywhere
   if (focus.length === 0) {
     for (const line of lines) {
       const match = line.match(/^- \[ \]\s+(.+)/);
@@ -123,32 +100,24 @@ async function getPriorities(): Promise<Priorities> {
     }
   }
 
-  // Blockers: only trust explicit "BLOCKER" or "blocked" mentions in TODO
-  for (const line of lines) {
-    if (/block(er|ed|ing)/i.test(line) && line.match(/^- \[ \]/)) {
-      blockers.push(line.replace(/^- \[ \]\s*/, "").trim());
-    }
-  }
-
   return { focus, blockers };
 }
 
-interface ActiveThread {
-  id: string;
-  task: string;
-  status: string;
-}
-
-async function getActiveThreads(): Promise<ActiveThread[]> {
+async function getActiveThreads(): Promise<Array<{ id: string; task: string }>> {
   const todo = await readText(path.join(WORKSPACE, "TODO.md"));
-  const threads: ActiveThread[] = [];
+  const threads: Array<{ id: string; task: string }> = [];
 
-  const lines = todo.split("\n");
-  for (const line of lines) {
+  for (const line of todo.split("\n")) {
     const match = line.match(/^- \[ \]\s+(.+)/);
-    if (match && threads.length < 5) {
-      const task = match[1].replace(/\s*\(.*?\)\s*$/, "").trim();
-      threads.push({ id: `T${threads.length + 1}`, task, status: "open" });
+    if (!match) {
+      continue;
+    }
+    threads.push({
+      id: `T${threads.length + 1}`,
+      task: match[1].replace(/\s*\(.*?\)\s*$/, "").trim(),
+    });
+    if (threads.length >= 5) {
+      break;
     }
   }
 
@@ -157,23 +126,119 @@ async function getActiveThreads(): Promise<ActiveThread[]> {
 
 async function getShiftInfo(): Promise<{ mode: string; strategy: string }> {
   const config = await readJson(path.join(WORKSPACE, "memory", "shift-config.json"));
+  return { mode: config?.mode || "Builder", strategy: config?.strategy || "Continuous State" };
+}
+
+interface SessionTopology {
+  totalRecent: number;
+  builderRecent: number;
+  mainRecent: number;
+  channels: string[];
+  splitBrainRisk: "LOW" | "HIGH";
+}
+
+async function getSessionTopology(): Promise<SessionTopology> {
+  const cutoff = Date.now() - 48 * 60 * 60 * 1000;
+  let totalRecent = 0;
+  let builderRecent = 0;
+  let mainRecent = 0;
+  const channels = new Set<string>();
+
+  try {
+    const agentDirs = await fs.readdir(OPENCLAW_HOME, { withFileTypes: true });
+    for (const agentDir of agentDirs) {
+      if (!agentDir.isDirectory()) {
+        continue;
+      }
+      const agentName = agentDir.name;
+      const sessionsDir = path.join(OPENCLAW_HOME, agentName, "sessions");
+      let files: string[] = [];
+      try {
+        files = await fs.readdir(sessionsDir);
+      } catch {
+        continue;
+      }
+
+      for (const f of files) {
+        if (!f.endsWith(".jsonl")) {
+          continue;
+        }
+        const fullPath = path.join(sessionsDir, f);
+        let stat;
+        try {
+          stat = await fs.stat(fullPath);
+        } catch {
+          continue;
+        }
+        if (stat.mtimeMs < cutoff) {
+          continue;
+        }
+
+        totalRecent++;
+        if (agentName === "builder") {
+          builderRecent++;
+        }
+        if (agentName === "main") {
+          mainRecent++;
+        }
+
+        const channelGuess = f.includes("discord")
+          ? "discord"
+          : f.includes("telegram")
+            ? "telegram"
+            : "other";
+        channels.add(channelGuess);
+      }
+    }
+  } catch {
+    // ignore and return safe fallback
+  }
+
+  const splitBrainRisk = builderRecent > 0 && mainRecent > 0 ? "HIGH" : "LOW";
   return {
-    mode: config?.mode || "Builder",
-    strategy: config?.strategy || "Continuous State",
+    totalRecent,
+    builderRecent,
+    mainRecent,
+    channels: Array.from(channels.values()),
+    splitBrainRisk,
   };
 }
 
-// ─── Builder ─────────────────────────────────────────────────────────────────
+function buildReconciliationSnapshot(topology: SessionTopology) {
+  return {
+    generatedAt: new Date().toISOString(),
+    objective: "Single-brain context across all sessions/channels",
+    canonicalBrain: "builder",
+    status: topology.splitBrainRisk === "HIGH" ? "PARTIAL" : "UNIFIED",
+    metrics: {
+      recentSessions48h: topology.totalRecent,
+      builderRecentSessions48h: topology.builderRecent,
+      mainRecentSessions48h: topology.mainRecent,
+      channelsSeen: topology.channels,
+    },
+    actions: [
+      "Use STATE.md as canonical cross-session summary",
+      "Write task/status changes to TODO.md + STATE.md in same run",
+      "Escalate split-brain risk whenever both main and builder are active within 48h",
+    ],
+  };
+}
 
 async function buildState(): Promise<string> {
-  log("Reading sources...");
-
-  const [hb, priorities, threads, shift] = await Promise.all([
+  const [hb, priorities, threads, shift, topology] = await Promise.all([
     getHeartbeatHealth(),
     getPriorities(),
     getActiveThreads(),
     getShiftInfo(),
+    getSessionTopology(),
   ]);
+
+  const snapshot = buildReconciliationSnapshot(topology);
+  await fs.mkdir(path.join(WORKSPACE, "state"), { recursive: true });
+  await fs.writeFile(
+    path.join(WORKSPACE, "state", "session-reconciliation.json"),
+    JSON.stringify(snapshot, null, 2),
+  );
 
   const now = new Date();
   const timestamp = now.toLocaleString("en-AU", {
@@ -201,7 +266,7 @@ async function buildState(): Promise<string> {
     `**Updated:** ${timestamp} AEDT (auto-generated by refresh-state.ts)`,
     `**Mode:** ${shift.mode}`,
     `**Memory:** ${shift.strategy}`,
-    `**Status:** RUNNING`,
+    "**Status:** RUNNING",
     "",
     "---",
     "",
@@ -209,56 +274,51 @@ async function buildState(): Promise<string> {
     "",
   ];
 
-  if (priorities.focus.length > 0) {
-    for (const f of priorities.focus) {
-      lines.push(`1. ${f}`);
-    }
+  if (priorities.focus.length) {
+    priorities.focus.forEach((f) => lines.push(`1. ${f}`));
   } else {
     lines.push("No active priorities detected. Check TODO.md.");
   }
 
-  lines.push("");
-  lines.push("## Blockers");
-  lines.push("");
-
-  if (priorities.blockers.length > 0) {
-    for (const b of priorities.blockers) {
-      lines.push(`- ${b}`);
-    }
+  lines.push("", "## Blockers", "");
+  if (priorities.blockers.length) {
+    priorities.blockers.forEach((b) => lines.push(`- ${b}`));
   } else {
     lines.push("None.");
   }
 
-  lines.push("");
-  lines.push("## Active Threads");
-  lines.push("");
-
-  if (threads.length > 0) {
-    for (const t of threads) {
-      lines.push(`- **${t.id}:** ${t.task}`);
-    }
+  lines.push("", "## Active Threads", "");
+  if (threads.length) {
+    threads.forEach((t) => lines.push(`- **${t.id}:** ${t.task}`));
   } else {
     lines.push("No open threads.");
   }
 
-  lines.push("");
-  lines.push("## System Health");
-  lines.push("");
-  lines.push(`- Heartbeat: ${hbStatus} (${hbFresh})`);
-  lines.push(`- Master Index: see Notion Dashboard`);
-  lines.push(`- Cron: 12 jobs active (Australia/Sydney)`);
+  lines.push("", "## Session Reconciliation", "");
+  lines.push(`- Canonical brain: **${snapshot.canonicalBrain}**`);
+  lines.push(
+    `- Recent sessions (48h): ${topology.totalRecent} | builder: ${topology.builderRecent} | main: ${topology.mainRecent}`,
+  );
+  lines.push(`- Channels seen: ${topology.channels.join(", ") || "none"}`);
+  lines.push(`- Split-brain risk: **${topology.splitBrainRisk}**`);
+  lines.push(`- Snapshot: state/session-reconciliation.json`);
 
-  lines.push("");
-  lines.push("---");
-  lines.push("");
-  lines.push("*Auto-generated. Do not edit manually. Source: `scripts/refresh-state.ts`*");
-  lines.push("*Detailed tracking: TODO.md | Dashboard: Notion | History: CHANGELOG.md*");
-  lines.push("");
+  lines.push("", "## System Health", "");
+  lines.push(`- Heartbeat: ${hbStatus} (${hbFresh})`);
+  lines.push("- Master Index: see Notion Dashboard");
+  lines.push("- Cron: 12 jobs active (Australia/Sydney)");
+
+  lines.push(
+    "",
+    "---",
+    "",
+    "*Auto-generated. Do not edit manually. Source: `scripts/refresh-state.ts`*",
+    "*Detailed tracking: TODO.md | Dashboard: Notion | History: CHANGELOG.md*",
+    "",
+  );
 
   return lines.join("\n");
 }
-
-// ─── Main ────────────────────────────────────────────────────────────────────
 
 async function main() {
   log("Refreshing STATE.md...");

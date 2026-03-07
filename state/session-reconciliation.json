@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-03-07T21:53:13.450Z",
+  "objective": "Single-brain context across all sessions/channels",
+  "canonicalBrain": "builder",
+  "status": "PARTIAL",
+  "metrics": {
+    "recentSessions48h": 187,
+    "builderRecentSessions48h": 6,
+    "mainRecentSessions48h": 179,
+    "channelsSeen": ["other"]
+  },
+  "actions": [
+    "Use STATE.md as canonical cross-session summary",
+    "Write task/status changes to TODO.md + STATE.md in same run",
+    "Escalate split-brain risk whenever both main and builder are active within 48h"
+  ]
+}
