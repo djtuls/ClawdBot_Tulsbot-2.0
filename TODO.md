@@ -19,10 +19,10 @@
 
 ### Phase A — Core Operating Integrations (Now)
 
-- [ ] HubSpot MCP integration (contacts/deals create-update from agent workflows)
-- [ ] Notion MCP integration (project notes/briefs sync for INFT Hub)
-- [ ] Gmail MCP integration (draft-first outbound + thread triage)
-- [ ] Credential inventory + secret checks for all 3 integrations
+- [x] ~~HubSpot MCP integration~~ **DEPRECATED (2026-03-07 by user direction)**
+- [x] ~~Notion MCP integration~~ **DEPRECATED (2026-03-07 by user direction)**
+- [x] ~~Gmail MCP integration~~ **DEPRECATED (2026-03-07 by user direction)**
+- [ ] Credential inventory + secret checks for active integrations only
 - [ ] Governance validation: draft-only outbound + approval gates intact
 
 ### Phase B — Ops Backbone
@@ -49,12 +49,19 @@
 
 ### Unified Governance Control Plane (WhatsApp + Email + Meetings + Calls/Plaud)
 
+- [ ] Email Governance & Capture OS — Final Plan (Approval)
+
 - [x] Design Notion schema for `Capture Governance` (source-level rules, monitor modes, routing, retention, sensitivity)
 - [x] Add/confirm `Contacts` DB as canonical people registry for governance relations
 - [x] Create `WhatsApp Groups` DB (group id, members, monitor mode: Monitor/Archive/Ignore, priority, owner)
 - [x] Create `Capture Highlights` DB (key updates, decisions, actions, risks) linked to group/contact/project
 - [ ] Add `Calls/Plaud` governance properties (processing depth, confidentiality, routing targets)
 - [ ] Implement inbox-router gating logic so `Archive/Ignore` sources are skipped automatically
+- [ ] Enforce Notion Email label policy (`Keep in Inbox` vs `Skip Inbox` + `Capture=true/false`) as capture intake gate
+- [ ] Enforce email dedup invariant (`provider+account+threadId`, fallback `messageId`) with upsert-only behavior
+- [ ] Implement thread-page updater: same thread -> same Notion page; append all message bodies chronologically (inbound + outbound)
+- [ ] Add AI summary-at-top refresh on every thread update (status, pending asks, owner, next step, blockers)
+- [ ] Implement thread lifecycle states (`active`, `waiting`, `sorted`, `archived`) with auto move-out-of-inbox on `sorted`
 - [ ] Pilot with top 3 WhatsApp groups + 1 Plaud call flow, then tune extraction/routing rules
 - [ ] Document runbook/SOP for ongoing governance maintenance
 
@@ -64,15 +71,6 @@
 
 - [ ] Re-auth `gog` for `tulsbot@gmail.com` on Mac Mini (browser consent) so outbound Gmail sends resume without keyring prompt.
 - [ ] After re-auth, run a send smoke test: `gog gmail send --account tulsbot@gmail.com --to ferro.tulio@gmail.com --subject "GOG auth test" --body "Auth OK" --no-input`.
-
-### Notion — Additional Databases
-
-Only 6 databases are verified and connected. To add more, share the Notion URL.
-
-- [ ] PARA structure (01-Projects, 02-Areas, 03-Resources, 04-Archive)
-- [ ] Finance Inbox
-- [ ] CRM Companies
-- [ ] CRM Interactions
 
 ### Mac Mini Hardware
 
@@ -170,9 +168,7 @@ Only 6 databases are verified and connected. To add more, share the Notion URL.
 ## Deferred
 
 - [ ] GoDaddy CNAME: mc.tulsbot.com → tunnel (verify DNS)
-- [ ] Bidirectional HubSpot <-> Notion sync (after V1 one-way is proven)
 - [ ] Meeting intelligence (when meeting volume justifies)
 - [ ] Financial tracking (QuickBooks integration)
-- [ ] Tulsbot root page in Notion (when writes to Notion are needed)
 - [ ] Tailscale ACLs hardening
 - [ ] UptimeRobot monitoring
