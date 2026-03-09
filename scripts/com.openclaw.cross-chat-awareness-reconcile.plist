@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.openclaw.cross-chat-awareness-reconcile</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>/Users/tulioferro/.bun/bin/bun</string>
+      <string>/Users/tulioferro/.openclaw/workspace/scripts/cross-chat-awareness.ts</string>
+      <string>reconcile</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/tulioferro/.openclaw/workspace</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>CROSSCHAT_WORKSPACE</key>
+      <string>/Users/tulioferro/.openclaw/workspace</string>
+      <key>CROSSCHAT_AGENTS_ROOT</key>
+      <string>/Users/tulioferro/.openclaw/agents</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StartInterval</key>
+    <integer>3600</integer>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/openclaw/cross-chat-awareness-reconcile.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/openclaw/cross-chat-awareness-reconcile.err.log</string>
+  </dict>
+</plist>

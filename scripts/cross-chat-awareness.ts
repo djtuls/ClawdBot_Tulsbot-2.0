@@ -1,47 +1,53 @@
 #!/usr/bin/env bun
 import {
+  appendFileSync,
   existsSync,
   mkdirSync,
-  readFileSync,
-  appendFileSync,
-  writeFileSync,
   readdirSync,
+  readFileSync,
   statSync,
+  writeFileSync,
 } from "node:fs";
 import { homedir } from "node:os";
-import { join, basename } from "node:path";
+import { basename, join } from "node:path";
 
 type State = {
   version: number;
   lineOffsets: Record<string, number>;
+  seenEventIds: string[];
   lastRunAt?: string;
+  lastReconcileAt?: string;
   lastError?: string;
 };
 
-type TranscriptEvent = {
-  ts: string;
+type LogEntry = {
+  id: string;
+  timestamp: string;
   channel: string;
-  peerKind: "group" | "direct" | "unknown";
-  peerId: string;
-  topicId?: string;
-  topicName?: string;
-  sender?: string;
+  chatOrTopic: string;
+  sender: string;
   senderId?: string;
+  direction: "incoming" | "outgoing" | "tool" | "unknown";
   role: "user" | "assistant" | "tool" | "unknown";
-  text: string;
+  messageText: string;
+  mediaReference?: string;
+  actionTags: string[];
+  projectLinks: string[];
+  contactLinks: string[];
   sourceFile: string;
   sessionId: string;
-  messageId?: string;
 };
 
 const HOME = homedir();
 const WORKSPACE = process.env.CROSSCHAT_WORKSPACE || "/Users/tulioferro/.openclaw/workspace";
 const AGENTS_ROOT = process.env.CROSSCHAT_AGENTS_ROOT || join(HOME, ".openclaw", "agents");
+
 const DATA_DIR = join(WORKSPACE, "data", "cross-chat-awareness");
-const LOG_DIR = join(WORKSPACE, "logs", "cross-chat-awareness");
 const STATE_PATH = join(DATA_DIR, "state.json");
-const INDEX_PATH = join(DATA_DIR, "index.json");
+const INDEX_JSON = join(DATA_DIR, "index.json");
 const INCIDENT_LOG = join(WORKSPACE, "reports", "ops", "cross-chat-awareness.log");
+
+const LOG_ROOT = join(WORKSPACE, "logs", "cross-chat-awareness");
 
 const DEFAULT_VAULT = join(
   HOME,
@@ -52,97 +58,82 @@ const DEFAULT_VAULT = join(
   "tuls-vault",
 );
 const VAULT_ROOT = process.env.OBSIDIAN_VAULT_PATH || DEFAULT_VAULT;
-const VAULT_TRANSCRIPTS = join(VAULT_ROOT, "07_chats", "transcripts");
-const VAULT_INDEX = join(VAULT_ROOT, "07_chats", "index", "topics.md");
+const OBS_ROOT = join(VAULT_ROOT, "03_openclaw", "chat-logs");
+const OBS_DAILY = join(OBS_ROOT, "daily");
+const OBS_BY_CHANNEL = join(OBS_ROOT, "by-channel");
+const OBS_INDEX = join(OBS_ROOT, "index.md");
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
-const SUPABASE_TABLE = process.env.CROSSCHAT_SUPABASE_TABLE; // optional (no default)
+const SUPABASE_TABLE = process.env.CROSSCHAT_SUPABASE_TABLE; // optional
 
 const POLL_MS = Number(process.env.CROSSCHAT_POLL_MS || 15000);
 
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function slug(v: string): string {
+  return (
+    v
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 96) || "unknown"
+  );
+}
+
 function ensureDirs() {
-  [DATA_DIR, LOG_DIR, join(WORKSPACE, "reports", "ops")].forEach((d) =>
+  [DATA_DIR, LOG_ROOT, join(WORKSPACE, "reports", "ops")].forEach((d) =>
     mkdirSync(d, { recursive: true }),
   );
   if (existsSync(VAULT_ROOT)) {
-    mkdirSync(VAULT_TRANSCRIPTS, { recursive: true });
-    mkdirSync(join(VAULT_ROOT, "07_chats", "index"), { recursive: true });
+    [OBS_ROOT, OBS_DAILY, OBS_BY_CHANNEL].forEach((d) => mkdirSync(d, { recursive: true }));
   }
 }
 
 function loadState(): State {
   if (!existsSync(STATE_PATH)) {
-    return { version: 1, lineOffsets: {} };
+    return { version: 2, lineOffsets: {}, seenEventIds: [] };
   }
   try {
-    return JSON.parse(readFileSync(STATE_PATH, "utf8")) as State;
+    const s = JSON.parse(readFileSync(STATE_PATH, "utf8")) as State;
+    s.seenEventIds ||= [];
+    return s;
   } catch {
-    return { version: 1, lineOffsets: {} };
+    return { version: 2, lineOffsets: {}, seenEventIds: [] };
   }
 }
 
 function saveState(state: State) {
-  state.lastRunAt = new Date().toISOString();
+  while (state.seenEventIds.length > 50000) {
+    state.seenEventIds.shift();
+  }
+  state.lastRunAt = nowIso();
   writeFileSync(STATE_PATH, JSON.stringify(state, null, 2));
-}
-
-function slug(input: string): string {
-  return (
-    input
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 90) || "unknown"
-  );
-}
-
-function parseConversationMetadata(text: string): Partial<TranscriptEvent> {
-  const out: Partial<TranscriptEvent> = {};
-  const conv = text.match(/Conversation info \(untrusted metadata\):\s*```json\s*([\s\S]*?)```/);
-  if (conv) {
-    try {
-      const j = JSON.parse(conv[1]);
-      out.topicId = j.topic_id ? String(j.topic_id) : undefined;
-      out.topicName = j.group_subject || undefined;
-      out.sender = j.sender || undefined;
-      out.peerId = j.conversation_label || undefined;
-      out.messageId = j.message_id ? String(j.message_id) : undefined;
-    } catch {}
-  }
-  const sender = text.match(/Sender \(untrusted metadata\):\s*```json\s*([\s\S]*?)```/);
-  if (sender) {
-    try {
-      const j = JSON.parse(sender[1]);
-      out.sender = out.sender || j.name || j.label;
-      out.senderId = j.id ? String(j.id) : undefined;
-    } catch {}
-  }
-  return out;
 }
 
 function listSessionFiles(): string[] {
   const out: string[] = [];
-  const agents = existsSync(AGENTS_ROOT) ? readdirSync(AGENTS_ROOT) : [];
-  for (const agent of agents) {
-    const sessionsDir = join(AGENTS_ROOT, agent, "sessions");
-    if (!existsSync(sessionsDir)) {
+  if (!existsSync(AGENTS_ROOT)) {
+    return out;
+  }
+  for (const agent of readdirSync(AGENTS_ROOT)) {
+    const sessions = join(AGENTS_ROOT, agent, "sessions");
+    if (!existsSync(sessions)) {
       continue;
     }
-    for (const f of readdirSync(sessionsDir)) {
+    for (const f of readdirSync(sessions)) {
       if (!f.endsWith(".jsonl")) {
         continue;
       }
       if (f.includes(".deleted.")) {
         continue;
       }
-      if (!f.includes("topic-") && !f.includes("telegram")) {
-        continue;
-      }
-      const full = join(sessionsDir, f);
+      const p = join(sessions, f);
       try {
-        if (statSync(full).isFile()) {
-          out.push(full);
+        if (statSync(p).isFile()) {
+          out.push(p);
         }
       } catch {}
     }
@@ -150,11 +141,104 @@ function listSessionFiles(): string[] {
   return out;
 }
 
-function extractEventsFromLines(file: string, lines: string[]): TranscriptEvent[] {
-  const events: TranscriptEvent[] = [];
-  const sessionId = basename(file).replace(/\.jsonl$/, "");
-  const isTopic = /topic-([0-9]+)/.exec(sessionId);
-  let contextMeta: Partial<TranscriptEvent> = {};
+function parseConversationInfo(text: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  const m = text.match(/Conversation info \(untrusted metadata\):\s*```json\s*([\s\S]*?)```/);
+  if (m) {
+    try {
+      const j = JSON.parse(m[1]);
+      if (j.conversation_label) {
+        out.conversation_label = String(j.conversation_label);
+      }
+      if (j.topic_id) {
+        out.topic_id = String(j.topic_id);
+      }
+      if (j.group_subject) {
+        out.group_subject = String(j.group_subject);
+      }
+      if (j.sender) {
+        out.sender = String(j.sender);
+      }
+      if (j.sender_id) {
+        out.sender_id = String(j.sender_id);
+      }
+      if (j.message_id) {
+        out.message_id = String(j.message_id);
+      }
+    } catch {}
+  }
+
+  const s = text.match(/Sender \(untrusted metadata\):\s*```json\s*([\s\S]*?)```/);
+  if (s) {
+    try {
+      const j = JSON.parse(s[1]);
+      if (!out.sender && (j.name || j.label)) {
+        out.sender = String(j.name || j.label);
+      }
+      if (!out.sender_id && j.id) {
+        out.sender_id = String(j.id);
+      }
+    } catch {}
+  }
+  return out;
+}
+
+function detectChannel(convLabel?: string): string {
+  if (!convLabel) {
+    return "unknown";
+  }
+  if (/telegram/i.test(convLabel)) {
+    return "telegram";
+  }
+  if (/discord/i.test(convLabel)) {
+    return "discord";
+  }
+  if (/slack/i.test(convLabel)) {
+    return "slack";
+  }
+  if (/whatsapp/i.test(convLabel)) {
+    return "whatsapp";
+  }
+  return "unknown";
+}
+
+function extractActionTags(text: string): string[] {
+  const tags = new Set<string>();
+  if (/\[\[reply_to/i.test(text)) {
+    tags.add("reply-tag");
+  }
+  if (/HITL|approve|approval/i.test(text)) {
+    tags.add("hitl");
+  }
+  if (/RUNBOOK_[A-Z_]+/.test(text)) {
+    tags.add("runbook-status");
+  }
+  if (/Critical alert|blocker|urgent/i.test(text)) {
+    tags.add("alert");
+  }
+  return [...tags];
+}
+
+function extractLinks(text: string): { projectLinks: string[]; contactLinks: string[] } {
+  const projectLinks = new Set<string>();
+  const contactLinks = new Set<string>();
+  for (const m of text.matchAll(/#([A-Za-z0-9._-]{2,})/g)) {
+    projectLinks.add(m[1]);
+  }
+  for (const m of text.matchAll(/@([A-Za-z0-9_]{2,})/g)) {
+    contactLinks.add(m[1]);
+  }
+  return { projectLinks: [...projectLinks], contactLinks: [...contactLinks] };
+}
+
+function normalizeText(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function extractEntries(file: string, lines: string[]): LogEntry[] {
+  const entries: LogEntry[] = [];
+  const sessionId = basename(file, ".jsonl");
+  let context: Record<string, string> = {};
 
   for (const line of lines) {
     if (!line.trim()) {
@@ -171,98 +255,140 @@ function extractEventsFromLines(file: string, lines: string[]): TranscriptEvent[
     }
 
     const role = row.message.role || "unknown";
-    const contents = Array.isArray(row.message.content) ? row.message.content : [];
-    const text = contents
-      .filter((c: any) => c?.type === "text" && typeof c.text === "string")
-      .map((c: any) => c.text)
-      .join("\n")
-      .trim();
+    const content = Array.isArray(row.message.content) ? row.message.content : [];
 
-    if (!text) {
+    const textParts = content
+      .filter((c: any) => c?.type === "text" && typeof c.text === "string")
+      .map((c: any) => c.text);
+    if (textParts.length === 0) {
       continue;
     }
-    const md = parseConversationMetadata(text);
-    if (md.topicId || md.topicName || md.peerId || md.sender) {
-      contextMeta = { ...contextMeta, ...md };
+    const rawText = textParts.join("\n");
+    const parsed = parseConversationInfo(rawText);
+    if (Object.keys(parsed).length) {
+      context = { ...context, ...parsed };
     }
 
-    const event: TranscriptEvent = {
-      ts: row.timestamp || new Date().toISOString(),
-      channel: "telegram",
-      peerKind: "group",
-      peerId: md.peerId || contextMeta.peerId || "unknown",
-      topicId: md.topicId || contextMeta.topicId || (isTopic ? isTopic[1] : undefined),
-      topicName: md.topicName || contextMeta.topicName,
-      sender: md.sender || contextMeta.sender,
-      senderId: md.senderId || contextMeta.senderId,
+    const channel = detectChannel(parsed.conversation_label || context.conversation_label);
+    const chatOrTopic =
+      parsed.topic_id ||
+      context.topic_id ||
+      parsed.conversation_label ||
+      context.conversation_label ||
+      sessionId;
+    const sender =
+      parsed.sender || context.sender || (role === "assistant" ? "assistant" : "unknown");
+    const senderId = parsed.sender_id || context.sender_id;
+
+    const messageText = normalizeText(rawText);
+    const mediaReference = content.find((c: any) => c?.type && c.type !== "text")?.type;
+    const actionTags = extractActionTags(messageText);
+    const { projectLinks, contactLinks } = extractLinks(messageText);
+
+    const id = `${sessionId}:${row.id || row.timestamp || "x"}:${role}`;
+
+    entries.push({
+      id,
+      timestamp: row.timestamp || nowIso(),
+      channel,
+      chatOrTopic: String(chatOrTopic),
+      sender,
+      senderId,
+      direction:
+        role === "user"
+          ? "incoming"
+          : role === "assistant"
+            ? "outgoing"
+            : role === "tool"
+              ? "tool"
+              : "unknown",
       role,
-      text,
+      messageText,
+      mediaReference,
+      actionTags,
+      projectLinks,
+      contactLinks,
       sourceFile: file,
       sessionId,
-      messageId: md.messageId,
-    };
-    events.push(event);
+    });
   }
-  return events;
+
+  return entries;
 }
 
-function appendWorkspaceLog(ev: TranscriptEvent) {
-  const day = ev.ts.slice(0, 10);
-  const topic = slug(ev.topicName || `topic-${ev.topicId || "unknown"}`);
-  const path = join(LOG_DIR, day, `${ev.channel}-${topic}.jsonl`);
-  mkdirSync(join(LOG_DIR, day), { recursive: true });
-  appendFileSync(path, JSON.stringify(ev) + "\n");
+function formatEntryMarkdown(e: LogEntry): string {
+  return [
+    "",
+    "---",
+    `- timestamp: ${e.timestamp}`,
+    `- channel_chat_topic: ${e.channel} / ${e.chatOrTopic}`,
+    `- sender: ${e.sender}${e.senderId ? ` (${e.senderId})` : ""}`,
+    `- direction: ${e.direction}`,
+    `- role: ${e.role}`,
+    `- message_text: ${e.messageText}`,
+    `- media_reference: ${e.mediaReference || "none"}`,
+    `- action_tags: ${e.actionTags.length ? e.actionTags.join(", ") : "none"}`,
+    `- links_project: ${e.projectLinks.length ? e.projectLinks.join(", ") : "none"}`,
+    `- links_contact: ${e.contactLinks.length ? e.contactLinks.join(", ") : "none"}`,
+  ].join("\n");
 }
 
-function appendVaultTranscript(ev: TranscriptEvent) {
+function ensureFileHeader(path: string, header: string) {
+  if (!existsSync(path)) {
+    mkdirSync(join(path, ".."), { recursive: true });
+    writeFileSync(path, header);
+  }
+}
+
+function appendToWorkspaceLogs(e: LogEntry) {
+  const day = e.timestamp.slice(0, 10);
+  const p = join(LOG_ROOT, day, `${e.channel}-${slug(e.chatOrTopic)}.jsonl`);
+  mkdirSync(join(LOG_ROOT, day), { recursive: true });
+  appendFileSync(p, JSON.stringify(e) + "\n");
+}
+
+function appendToObsidian(e: LogEntry) {
   if (!existsSync(VAULT_ROOT)) {
     return;
   }
-  const day = ev.ts.slice(0, 10);
-  const topic = slug(ev.topicName || `topic-${ev.topicId || "unknown"}`);
-  const path = join(VAULT_TRANSCRIPTS, `${day}-${ev.channel}-${topic}.md`);
+  const day = e.timestamp.slice(0, 10);
+  const daily = join(OBS_DAILY, `${day}.md`);
+  const byChan = join(OBS_BY_CHANNEL, slug(e.channel), slug(e.chatOrTopic), `${day}.md`);
 
-  if (!existsSync(path)) {
-    const frontmatter = [
-      "---",
-      `date: ${day}`,
-      `channel: ${ev.channel}`,
-      `topic_id: ${ev.topicId || "unknown"}`,
-      `topic_name: ${ev.topicName || "unknown"}`,
-      `source: openclaw-session-transcripts`,
-      `append_only: true`,
-      "---",
-      "",
-      `# Transcript ${day} — ${ev.topicName || `topic-${ev.topicId || "unknown"}`}`,
-      "",
-    ].join("\n");
-    appendFileSync(path, frontmatter + "\n");
-  }
+  ensureFileHeader(daily, `# OpenClaw Chat Logs — ${day}\n\nAppend-only daily transcript.\n`);
+  ensureFileHeader(
+    byChan,
+    `# OpenClaw Chat Logs — ${e.channel}/${e.chatOrTopic} — ${day}\n\nAppend-only channel/topic transcript.\n`,
+  );
 
-  const line = `- ${ev.ts} | ${ev.role}${ev.sender ? ` | ${ev.sender}` : ""}: ${ev.text.replace(/\n+/g, " ").slice(0, 4000)}`;
-  appendFileSync(path, line + "\n");
+  const block = formatEntryMarkdown(e) + "\n";
+  appendFileSync(daily, block);
+  appendFileSync(byChan, block);
 }
 
-async function maybeWriteSupabase(events: TranscriptEvent[]) {
-  if (!SUPABASE_URL || !SUPABASE_KEY || !SUPABASE_TABLE || events.length === 0) {
+async function maybeWriteSupabase(entries: LogEntry[]) {
+  if (!SUPABASE_URL || !SUPABASE_KEY || !SUPABASE_TABLE || entries.length === 0) {
     return;
   }
   try {
-    const payload = events.map((e) => ({
-      ts: e.ts,
+    const payload = entries.map((e) => ({
+      id: e.id,
+      ts: e.timestamp,
       channel: e.channel,
-      peer_kind: e.peerKind,
-      peer_id: e.peerId,
-      topic_id: e.topicId || null,
-      topic_name: e.topicName || null,
-      sender: e.sender || null,
+      chat_topic: e.chatOrTopic,
+      sender: e.sender,
       sender_id: e.senderId || null,
+      direction: e.direction,
       role: e.role,
-      text: e.text,
+      text: e.messageText,
+      media_reference: e.mediaReference || null,
+      action_tags: e.actionTags,
+      project_links: e.projectLinks,
+      contact_links: e.contactLinks,
       source_file: e.sourceFile,
       session_id: e.sessionId,
-      message_id: e.messageId || null,
     }));
+
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`, {
       method: "POST",
       headers: {
@@ -277,178 +403,275 @@ async function maybeWriteSupabase(events: TranscriptEvent[]) {
       const body = await res.text();
       appendFileSync(
         INCIDENT_LOG,
-        `${new Date().toISOString()} supabase_write_error ${res.status} ${body.slice(0, 200)}\n`,
+        `${nowIso()} supabase_write_error status=${res.status} ${body.slice(0, 300)}\n`,
       );
     }
   } catch (err: any) {
     appendFileSync(
       INCIDENT_LOG,
-      `${new Date().toISOString()} supabase_write_error ${String(err?.message || err)}\n`,
+      `${nowIso()} supabase_write_error ${String(err?.message || err)}\n`,
     );
   }
 }
 
 function rebuildIndex() {
-  const days = existsSync(LOG_DIR) ? readdirSync(LOG_DIR).toSorted() : [];
-  const topicMap: Record<string, { files: string[]; lastDay: string }> = {};
+  const byTopic = new Map<
+    string,
+    { count: number; lastTs: string; channel: string; topic: string }
+  >();
+  const days = existsSync(LOG_ROOT) ? readdirSync(LOG_ROOT).toSorted() : [];
 
-  for (const day of days) {
-    const dayDir = join(LOG_DIR, day);
-    if (!statSync(dayDir).isDirectory()) {
+  for (const d of days) {
+    const dayDir = join(LOG_ROOT, d);
+    if (!existsSync(dayDir) || !statSync(dayDir).isDirectory()) {
       continue;
     }
-    const files = readdirSync(dayDir).filter((f) => f.endsWith(".jsonl"));
-    for (const f of files) {
-      const key = f.replace(/^telegram-/, "").replace(/\.jsonl$/, "");
-      const rel = join(day, f);
-      if (!topicMap[key]) {
-        topicMap[key] = { files: [], lastDay: day };
+    for (const f of readdirSync(dayDir)) {
+      if (!f.endsWith(".jsonl")) {
+        continue;
       }
-      topicMap[key].files.push(rel);
-      topicMap[key].lastDay = day;
+      const p = join(dayDir, f);
+      const lines = readFileSync(p, "utf8").trim().split("\n").filter(Boolean);
+      for (const ln of lines) {
+        try {
+          const e = JSON.parse(ln) as LogEntry;
+          const key = `${e.channel}:${e.chatOrTopic}`;
+          const cur = byTopic.get(key) || {
+            count: 0,
+            lastTs: e.timestamp,
+            channel: e.channel,
+            topic: e.chatOrTopic,
+          };
+          cur.count += 1;
+          if (e.timestamp > cur.lastTs) {
+            cur.lastTs = e.timestamp;
+          }
+          byTopic.set(key, cur);
+        } catch {}
+      }
     }
   }
 
   writeFileSync(
-    INDEX_PATH,
-    JSON.stringify({ updatedAt: new Date().toISOString(), topics: topicMap }, null, 2),
+    INDEX_JSON,
+    JSON.stringify({ updatedAt: nowIso(), topics: [...byTopic.entries()] }, null, 2),
   );
 
   if (existsSync(VAULT_ROOT)) {
     const lines = [
-      "# Chat Topic Index",
+      "# Chat Logs Index",
       "",
-      `Updated: ${new Date().toISOString()}`,
+      `Updated: ${nowIso()}`,
       "",
-      "| Topic | Last Day | Files |",
-      "|---|---:|---:|",
-      ...Object.entries(topicMap)
-        .toSorted((a, b) => b[1].lastDay.localeCompare(a[1].lastDay))
-        .map(([k, v]) => `| ${k} | ${v.lastDay} | ${v.files.length} |`),
+      "| Channel | Chat/Topic | Entries | Last Timestamp |",
+      "|---|---|---:|---|",
+      ...[...byTopic.values()]
+        .toSorted((a, b) => String(b.lastTs || "").localeCompare(String(a.lastTs || "")))
+        .map((r) => `| ${r.channel} | ${r.topic} | ${r.count} | ${r.lastTs || "unknown"} |`),
       "",
-      "Use `bun scripts/cross-chat-awareness.ts query --topic <name>` for quick lookup.",
+      "Health check: `bun scripts/cross-chat-awareness.ts status`",
+      'Query: `bun scripts/cross-chat-awareness.ts query --topic "General"`',
     ];
-    writeFileSync(VAULT_INDEX, lines.join("\n") + "\n");
+    writeFileSync(OBS_INDEX, lines.join("\n") + "\n");
   }
 }
 
-function runOnce() {
+function syncIncremental(mode: "live" | "reconcile" = "live") {
   ensureDirs();
   const state = loadState();
-  let newEvents = 0;
-  const supabaseBatch: TranscriptEvent[] = [];
+  const seen = new Set(state.seenEventIds);
+  const supabaseBatch: LogEntry[] = [];
+  let appended = 0;
 
   for (const file of listSessionFiles()) {
-    const raw = readFileSync(file, "utf8");
-    const lines = raw.split("\n");
-    const prev = state.lineOffsets[file] || 0;
+    const lines = readFileSync(file, "utf8").split("\n");
+    const prev = mode === "reconcile" ? 0 : state.lineOffsets[file] || 0;
     if (lines.length <= prev) {
+      state.lineOffsets[file] = lines.length;
       continue;
     }
 
-    const delta = lines.slice(prev);
-    const events = extractEventsFromLines(file, delta);
-    for (const ev of events) {
-      appendWorkspaceLog(ev);
-      appendVaultTranscript(ev);
-      supabaseBatch.push(ev);
-      newEvents++;
+    const entries = extractEntries(file, lines.slice(prev));
+    for (const e of entries) {
+      if (seen.has(e.id)) {
+        continue;
+      }
+      seen.add(e.id);
+      state.seenEventIds.push(e.id);
+      appendToWorkspaceLogs(e);
+      appendToObsidian(e);
+      supabaseBatch.push(e);
+      appended += 1;
     }
     state.lineOffsets[file] = lines.length;
   }
 
+  if (mode === "reconcile") {
+    state.lastReconcileAt = nowIso();
+  }
   saveState(state);
   rebuildIndex();
   void maybeWriteSupabase(supabaseBatch);
-  console.log(`[cross-chat-awareness] synced events=${newEvents}`);
+  console.log(`[cross-chat-awareness] mode=${mode} appended=${appended}`);
 }
 
-function doQuery(topic: string, limit = 30) {
-  const idx = existsSync(INDEX_PATH)
-    ? JSON.parse(readFileSync(INDEX_PATH, "utf8"))
-    : { topics: {} };
-  const needle = slug(topic);
-  const matches = Object.entries<any>(idx.topics || {}).filter(([k]) => k.includes(needle));
-  if (matches.length === 0) {
-    console.log(`No topics matched '${topic}'.`);
-    return;
-  }
-
-  const chosen = matches[0];
-  const files: string[] = chosen[1].files.slice(-5);
-  const rows: any[] = [];
-  for (const rel of files) {
-    const p = join(LOG_DIR, rel);
-    if (!existsSync(p)) {
+function recentEntries(hours = 24): LogEntry[] {
+  const cutoff = Date.now() - hours * 3600_000;
+  const out: LogEntry[] = [];
+  const days = existsSync(LOG_ROOT) ? readdirSync(LOG_ROOT).toSorted() : [];
+  for (const d of days) {
+    const dayDir = join(LOG_ROOT, d);
+    if (!existsSync(dayDir) || !statSync(dayDir).isDirectory()) {
       continue;
     }
-    const lines = readFileSync(p, "utf8").trim().split("\n").slice(-200);
-    for (const l of lines) {
-      try {
-        rows.push(JSON.parse(l));
-      } catch {}
+    for (const f of readdirSync(dayDir).filter((x) => x.endsWith(".jsonl"))) {
+      const p = join(dayDir, f);
+      for (const ln of readFileSync(p, "utf8").split("\n")) {
+        if (!ln.trim()) {
+          continue;
+        }
+        try {
+          const e = JSON.parse(ln) as LogEntry;
+          if (new Date(e.timestamp).getTime() >= cutoff) {
+            out.push(e);
+          }
+        } catch {}
+      }
     }
   }
-  rows.sort((a, b) => String(a.ts).localeCompare(String(b.ts)));
+  out.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  return out;
+}
+
+function generateDailyRecap() {
+  const rows = recentEntries(24);
+  const day = new Date().toISOString().slice(0, 10);
+  const reportDir = join(WORKSPACE, "reports", "daily-chat-recap");
+  mkdirSync(reportDir, { recursive: true });
+  const reportPath = join(reportDir, `${day}.md`);
+
+  const decisions = rows
+    .filter((r) => /approved|agreed|decision|lock(ed)? in|go ahead/i.test(r.messageText))
+    .slice(-12);
+  const actions = rows
+    .filter((r) => /todo|next|action|need to|will do|follow-up/i.test(r.messageText))
+    .slice(-12);
+
+  const byTopic = new Map<string, number>();
+  rows.forEach((r) =>
+    byTopic.set(
+      `${r.channel}/${r.chatOrTopic}`,
+      (byTopic.get(`${r.channel}/${r.chatOrTopic}`) || 0) + 1,
+    ),
+  );
+
+  const body = [
+    `# Daily Chat Recap — ${day}`,
+    "",
+    `Generated: ${nowIso()}`,
+    `Total logged entries (24h): ${rows.length}`,
+    "",
+    "## Top active chats/topics",
+    ...[...byTopic.entries()]
+      .toSorted((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([k, v]) => `- ${k}: ${v}`),
+    "",
+    "## Key decisions",
+    ...(decisions.length
+      ? decisions.map((d) => `- ${d.timestamp} | ${d.sender}: ${d.messageText.slice(0, 220)}`)
+      : ["- none detected"]),
+    "",
+    "## Key actions",
+    ...(actions.length
+      ? actions.map((d) => `- ${d.timestamp} | ${d.sender}: ${d.messageText.slice(0, 220)}`)
+      : ["- none detected"]),
+    "",
+    "## Notes",
+    "- This recap is derived from append-only chat logs.",
+    "- STATE.md was refreshed with a short summary pointer.",
+    "",
+  ].join("\n");
+
+  writeFileSync(reportPath, body);
+
+  const statePath = join(WORKSPACE, "STATE.md");
+  const marker = `\n## Chat Recap Refresh (${day})\n- source: reports/daily-chat-recap/${day}.md\n- entries_24h: ${rows.length}\n- generated_at: ${nowIso()}\n`;
+  appendFileSync(statePath, marker);
+
+  console.log(`[cross-chat-awareness] daily recap written ${reportPath}`);
+}
+
+function queryTopic(topic: string, limit = 30) {
+  const needle = slug(topic);
+  const rows = recentEntries(72).filter(
+    (r) => slug(r.chatOrTopic).includes(needle) || slug(r.messageText).includes(needle),
+  );
   const recent = rows.slice(-limit);
-  console.log(`Topic: ${chosen[0]} (showing ${recent.length})`);
+  console.log(`Topic query '${topic}' -> ${recent.length} entries`);
   for (const r of recent) {
     console.log(
-      `- ${r.ts} | ${r.role}${r.sender ? ` | ${r.sender}` : ""}: ${String(r.text).replace(/\n+/g, " ").slice(0, 240)}`,
+      `- ${r.timestamp} | ${r.channel}/${r.chatOrTopic} | ${r.sender}: ${r.messageText.slice(0, 240)}`,
     );
   }
 }
 
-function printStatus() {
+function status() {
   ensureDirs();
-  const state = loadState();
-  const tracked = Object.keys(state.lineOffsets).length;
-  const idxExists = existsSync(INDEX_PATH);
+  const s = loadState();
   console.log("cross-chat-awareness status");
   console.log(`- state: ${STATE_PATH}`);
-  console.log(`- tracked session files: ${tracked}`);
-  console.log(`- workspace logs: ${LOG_DIR}`);
+  console.log(`- tracked session files: ${Object.keys(s.lineOffsets).length}`);
+  console.log(`- last live run: ${s.lastRunAt || "never"}`);
+  console.log(`- last reconcile: ${s.lastReconcileAt || "never"}`);
+  console.log(`- index json: ${existsSync(INDEX_JSON) ? INDEX_JSON : "missing"}`);
+  console.log(`- obsidian root: ${existsSync(VAULT_ROOT) ? VAULT_ROOT : "missing"}`);
+  console.log(`- obsidian index: ${existsSync(OBS_INDEX) ? OBS_INDEX : "missing"}`);
   console.log(
-    `- obsidian vault: ${existsSync(VAULT_ROOT) ? VAULT_ROOT : "not found (set OBSIDIAN_VAULT_PATH)"}`,
+    `- supabase sink: ${SUPABASE_URL && SUPABASE_TABLE ? `${SUPABASE_TABLE} enabled` : "disabled"}`,
   );
-  console.log(`- index: ${idxExists ? INDEX_PATH : "missing"}`);
-  console.log(
-    `- supabase sink: ${SUPABASE_URL && SUPABASE_TABLE ? `${SUPABASE_TABLE} (enabled)` : "disabled"}`,
-  );
-  if (state.lastRunAt) {
-    console.log(`- last run: ${state.lastRunAt}`);
-  }
-  if (state.lastError) {
-    console.log(`- last error: ${state.lastError}`);
+  if (s.lastError) {
+    console.log(`- last error: ${s.lastError}`);
   }
 }
 
 async function main() {
   const cmd = process.argv[2] || "once";
-  if (cmd === "status") {
-    return printStatus();
-  }
-  if (cmd === "query") {
-    const topic = process.argv[4] || process.argv[3] || "general";
-    return doQuery(topic);
+  if (cmd === "once") {
+    return syncIncremental("live");
   }
   if (cmd === "watch") {
-    ensureDirs();
-    console.log(`[cross-chat-awareness] watch mode poll=${POLL_MS}ms`);
-    runOnce();
+    syncIncremental("live");
+    console.log(`[cross-chat-awareness] watch poll=${POLL_MS}ms`);
     setInterval(() => {
       try {
-        runOnce();
+        syncIncremental("live");
       } catch (err: any) {
-        const state = loadState();
-        state.lastError = String(err?.message || err);
-        saveState(state);
-        appendFileSync(INCIDENT_LOG, `${new Date().toISOString()} sync_error ${state.lastError}\n`);
+        const s = loadState();
+        s.lastError = String(err?.message || err);
+        saveState(s);
+        appendFileSync(INCIDENT_LOG, `${nowIso()} live_error ${s.lastError}\n`);
       }
     }, POLL_MS);
     return;
   }
-  runOnce();
+  if (cmd === "reconcile") {
+    return syncIncremental("reconcile");
+  }
+  if (cmd === "daily-recap") {
+    return generateDailyRecap();
+  }
+  if (cmd === "query") {
+    const topic = process.argv.slice(3).join(" ") || "general";
+    return queryTopic(topic);
+  }
+  if (cmd === "status") {
+    return status();
+  }
+
+  console.log(
+    "Usage: bun scripts/cross-chat-awareness.ts [once|watch|reconcile|daily-recap|query <topic>|status]",
+  );
 }
 
 main().catch((err) => {
