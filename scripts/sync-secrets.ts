@@ -59,6 +59,13 @@ const VAULT_SERVICE_MAP: Record<string, string> = {
   OPENCLAW_LOCAL_HEALTH_URL: "openclaw",
   VENICE_API_KEY: "venice",
   OPENCLAW_GATEWAY_TOKEN: "openclaw",
+  GOOGLE_CLIENT_ID: "google",
+  GOOGLE_CLIENT_SECRET: "google",
+  GOOGLE_REFRESH_TOKEN: "google",
+  TULSBOT_GMAIL_CLIENT_ID: "google",
+  TULSBOT_GMAIL_CLIENT_SECRET: "google",
+  TULSBOT_GMAIL_REFRESH_TOKEN: "google",
+  TULSBOT_GMAIL_ADDRESS: "google",
 };
 
 type ApiKey = {
