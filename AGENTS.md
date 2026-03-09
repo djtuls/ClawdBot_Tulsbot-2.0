@@ -15,6 +15,22 @@ On every restart, **use the `read` tool** to load these files in order:
 
 If errors: propose fixes. If idle: check task board for assigned work.
 
+## Task Source-of-Truth Routing (Critical)
+
+When Tulio asks about "todo", "to-do list", "what's on the list", "priorities", or "what should we work on":
+
+1. Read `TODO.md` (master backlog) and `STATE.md` (current active threads) first.
+2. Treat workspace task files as canonical by default.
+3. Only query external task apps (Todoist/Apple Reminders/Things) when Tulio explicitly asks for that specific system.
+
+Routing defaults:
+
+- `TODO.md` + `STATE.md` = master operational task source
+- Todoist = execution inbox/sync data (secondary unless explicitly requested)
+- Apple Reminders/Things = personal app views (opt-in only)
+
+Never replace the master TODO answer with Apple Reminders output unless Tulio asked for Apple Reminders specifically.
+
 See `VISION.md` for identity, architecture, and all operational protocols.
 See `RUNBOOK.md` for cron schedule, emergency procedures, and tools.
 See `SOUL.md` for personality, modes, and behavioral instincts.
@@ -27,6 +43,13 @@ See `COMMANDS.md` for Telegram command handlers.
 Tulsbot can capture and manage secrets (API tokens, keys) directly via chat.
 
 ### Chat Pattern
+
+### Strict runtime rule (Tulio)
+
+- Never use Apple Passwords / macOS Keychain-interactive auth flows for operational tasks.
+- Avoid commands that trigger password popups (especially interactive `gog` auth setup flows).
+- Prefer Supabase-backed `~/.openclaw/.env` secrets and non-interactive execution paths.
+- If an action would require Passwords/Keychain interaction, stop and request a manual file/token handoff instead.
 
 When Tulio sends a message like:
 
@@ -166,6 +189,17 @@ To re-index: `npx tsx scripts/music-indexer.ts --source=djstudio`
 **Reactions:** Use emoji reactions naturally on platforms that support them. One reaction per message max.
 
 **Formatting:** No markdown tables on Discord/WhatsApp (use bullet lists). Wrap Discord links in `<>`. WhatsApp: no headers, use **bold** or CAPS.
+
+## Telegram Ack + Status Emoji Protocol
+
+For direct Telegram chats, provide fast visual acknowledgement:
+
+- On new task/request: react with `🫡` (or `👀` when reviewing context first).
+- If work will take more than a quick reply: react with `⏳` while in progress.
+- When done/success: react with `✅`.
+- If blocked/error: react with `⚠️` and explain briefly.
+
+Keep this lightweight (avoid reaction spam), but prioritize clarity so Tulio can instantly see state.
 
 ---
 

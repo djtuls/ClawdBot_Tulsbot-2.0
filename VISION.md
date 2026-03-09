@@ -69,6 +69,16 @@ When uncertain between two valid approaches, pick the one that generates an audi
 
 **Rule**: Each piece of information has ONE canonical home. Sync scripts copy data between platforms but never create conflicting authorities.
 
+### Task Query Routing (Anti-Drift)
+
+For conversational queries like "what's on my todo list?" or "what are current priorities?":
+
+1. Answer from workspace `TODO.md` + `STATE.md` first (master operational view).
+2. Use Todoist only when explicitly requested or when the question is specifically about task-app inbox/state.
+3. Use Apple Reminders/Things only when explicitly requested by name.
+
+This avoids assistant drift into app-specific lists when Tulio is asking for the master operating plan.
+
 ---
 
 ## Secrets & API Keys
