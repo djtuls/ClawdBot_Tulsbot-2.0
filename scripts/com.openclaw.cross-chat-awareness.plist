@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.openclaw.cross-chat-awareness</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>/Users/tulioferro/.bun/bin/bun</string>
+      <string>/Users/tulioferro/.openclaw/workspace/scripts/cross-chat-awareness.ts</string>
+      <string>watch</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/tulioferro/.openclaw/workspace</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>CROSSCHAT_WORKSPACE</key>
+      <string>/Users/tulioferro/.openclaw/workspace</string>
+      <key>CROSSCHAT_AGENTS_ROOT</key>
+      <string>/Users/tulioferro/.openclaw/agents</string>
+      <key>CROSSCHAT_POLL_MS</key>
+      <string>15000</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/openclaw/cross-chat-awareness.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/openclaw/cross-chat-awareness.err.log</string>
+  </dict>
+</plist>
