@@ -81,6 +81,8 @@ Scope: Tulsbot/OpenClaw runtime behavior, communication, capture intake, and ris
 ### Context handling
 
 - Context-only captures are valid and should be stored durably when no action is needed.
+- Daily routing standard (mandatory): if previous-day Plaud recordings exist, ingest full transcripts, build first-pass project/contact context, then prompt Tulio for any missing clarifications.
+- Apply the same first-pass enrichment pattern to WhatsApp activity, meetings, and emails that enter capture inbox.
 
 ## 5) Discord Governance Contracts (Dormant Archive)
 
