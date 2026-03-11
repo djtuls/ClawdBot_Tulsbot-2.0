@@ -63,7 +63,9 @@ const parts = (p: any, o: any[]) => {
   }
   o.push(p);
   if (Array.isArray(p.parts)) {
-    for (const x of p.parts) parts(x, o);
+    for (const x of p.parts) {
+      parts(x, o);
+    }
   }
 };
 const extract = (m: any) => {
@@ -142,12 +144,13 @@ const append = (pid: string, b: string, ats: string[], url: string) => {
       paragraph: { rich_text: [{ type: "text", text: { content: "No attachments detected." } }] },
     });
   } else {
-    for (const a of ats)
+    for (const a of ats) {
       ch.push({
         object: "block",
         type: "bulleted_list_item",
         bulleted_list_item: { rich_text: [{ type: "text", text: { content: a } }] },
       });
+    }
   }
   ch.push({
     object: "block",
