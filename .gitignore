@@ -137,6 +137,12 @@ state/
 # Runtime integration state snapshots (generated)
 data/hubspot-*.json
 data/todoist-*.json
+data/notion-summary.json
+data/whatsapp-monitor-state.json
+data/email-label-habits.json
+data/inbox-message-index.json
+data/inbox-seen.json
+data/inbox-thread-index.json
 
 # Local safety backups (never push)
 backup/
