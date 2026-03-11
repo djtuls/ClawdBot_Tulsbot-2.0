@@ -123,3 +123,16 @@ TOOLS.md
 # Local councils/output folders
 council/
 archive/2026-03-02-pre-cleanup/
+
+# Generated runtime state/report artifacts (auto-updated by pipelines)
+data/cross-chat-awareness/*.json
+reports/context-window.json
+reports/context-window.md
+reports/heartbeat-hourly-history.log
+
+# Runtime state databases
+.supabase-sync-queue.db
+state/
+
+# Local safety backups (never push)
+backup/
