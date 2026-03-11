@@ -134,5 +134,9 @@ reports/heartbeat-hourly-history.log
 .supabase-sync-queue.db
 state/
 
+# Runtime integration state snapshots (generated)
+data/hubspot-*.json
+data/todoist-*.json
+
 # Local safety backups (never push)
 backup/
