@@ -37,13 +37,15 @@ cd /Users/tulioferro/.openclaw/workspace && npx tsx scripts/shift-manager.ts sta
 Sub-commands:
 
 - `/builder start` → `npx tsx scripts/shift-manager.ts start builder`
-- `/builder status` → `npx tsx scripts/shift-manager.ts status`
+- `/builder status` → `npx tsx scripts/builder-task-manager.ts status`
+- `/builder cancel <id>` → `npx tsx scripts/builder-task-manager.ts cancel <id> --notes "cancelled by user"`
 - `/builder end` → `npx tsx scripts/shift-manager.ts end`
 
 In builder mode, the agent should focus on heavy-lifting coding tasks:
 
 - Prioritize repo work, code changes, and automation
 - Use sub-agents/background workers for scoped heavy tasks
+- Register background work in `state/background-tasks.json` via `scripts/builder-task-manager.ts`
 - Keep main chat responsive while background work runs
 - Report progress/status periodically (`/builder status`)
 
