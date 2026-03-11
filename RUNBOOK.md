@@ -60,7 +60,7 @@ On every restart:
 2. Read `memory/session-handoff.md` — where we left off
 3. Read `RUNBOOK.md` (this file) — how to operate
 4. Read `STATE.md` — current system state
-5. Read `TODO.md` — what to work on
+5. Read `TODO_MASTER.md` — canonical backlog (both HUMAN + AGENT)
 6. Check `memory/heartbeat-state.json` — system health
 7. Check `memory/event-log.jsonl` (last 50 entries) — overnight errors
 
@@ -70,18 +70,23 @@ If errors found: propose fixes. If idle: check task board for assigned work.
 
 ## 4. Modes
 
-One agent, multiple behavioral modes. Switch via Telegram command.
+One agent, multiple behavioral modes. By default, mode is inferred from intent (no explicit mode command required), then can be overridden via Telegram command.
 
-| Command    | Mode    | Role                                                       |
-| ---------- | ------- | ---------------------------------------------------------- |
-| (default)  | Default | Context-aware assistant, loads project dossiers on request |
-| `/builder` | Builder | Architecture, coding, system design. Spawns subagents.     |
-| `/tulsday` | Tulsday | Context manager, state tracking, surfaces blockers         |
-| `/report`  | Report  | Summaries, reviews, progress updates                       |
+| Command    | Mode     | Role                                                                     |
+| ---------- | -------- | ------------------------------------------------------------------------ |
+| (auto)     | Inferred | Routes to Tulsday (human-domain) or Builder (system/build) automatically |
+| `/builder` | Builder  | Architecture, coding, system design. Spawns subagents.                   |
+| `/tulsday` | Tulsday  | Context manager, state tracking, reminders, human execution support      |
+| `/report`  | Report   | Summaries, reviews, progress updates                                     |
 
 Subagent policy: up to 8 concurrent subagents. Use them freely for parallel work. Always report what subagents returned.
 
-Execution directive (updated 2026-03-11):
+Execution directive (updated 2026-03-12):
+
+- Explicit mode router: `scripts/lib/mode-router.ts` infers `tulsday` vs `builder` from request intent.
+- `npx tsx scripts/shift-manager.ts start <intent>` auto-infers mode when mode is omitted.
+- HUMAN backlog normalization loop: `npx tsx scripts/todo-master-orchestrator.ts sync` keeps `TODO_MASTER.md` canonical.
+- HUMAN support loop: `npx tsx scripts/todo-master-orchestrator.ts support` emits context-link/reminder/pre-brief/blocker escalation recommendations.
 
 - Main remains the single persistent brain and foreground chat owner.
 - Builder mode is task-scoped only (invoked by explicit user request or delegated scoped task), not an always-on autonomous patrol loop.
@@ -99,6 +104,18 @@ Reliability + verification directive:
 ---
 
 ## 5. Telegram DM-First Governance (Discord Dormant)
+
+### 5.0 Hybrid Topic Operating Model (required)
+
+- Canonical topic map: `config/topic-operating-model.json`.
+- Topic contracts: `docs/topic-operating-model/topics/`.
+- Guardrail audit: `pnpm tsx scripts/topic-guardrails-audit.ts`.
+- Snapshot outputs:
+  - `reports/topic-guardrails-snapshot.md`
+  - `reports/topic-status-update.md`
+  - `state/topic-guardrails-audit.json`
+
+Operator rule: only `status=active` topics are valid for new execution updates. Deprecated topics are migration-only.
 
 Canonical policy entrypoint:
 

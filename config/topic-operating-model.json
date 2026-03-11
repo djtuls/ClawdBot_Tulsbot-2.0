@@ -1,0 +1,40 @@
+{
+  "version": "2026-03-12",
+  "scope": {
+    "channel": "telegram",
+    "groupId": "-1003840777920",
+    "groupName": "Topics"
+  },
+  "topics": [
+    {
+      "topicId": "telegram:-1003840777920:40",
+      "name": "Builder / Orchestration",
+      "status": "active",
+      "ownerMode": "builder",
+      "purpose": "System/build execution: architecture changes, automation delivery, code and infra runbooks.",
+      "routingPolicy": "Route builder-mode intents here by default. Do not post human commitments/planning unless tied to build execution decisions.",
+      "notifyPolicy": "Immediate for blockers and merge-ready outcomes; batched for routine implementation logs.",
+      "deprecatedReason": ""
+    },
+    {
+      "topicId": "telegram:-1003840777920:12",
+      "name": "Operations",
+      "status": "active",
+      "ownerMode": "tulsday",
+      "purpose": "Human-domain execution support: priorities, commitments, follow-ups, reminders, and operational planning.",
+      "routingPolicy": "Route tulsday-mode intents here by default. Escalate builder-only technical implementation requests to Builder / Orchestration.",
+      "notifyPolicy": "Immediate for deadlines, blockers, and owner ambiguities; scheduled digests for routine updates.",
+      "deprecatedReason": ""
+    },
+    {
+      "topicId": "telegram:-1003840777920:1",
+      "name": "General",
+      "status": "deprecated",
+      "ownerMode": "shared",
+      "purpose": "Legacy catch-all topic from early pilot phase.",
+      "routingPolicy": "Do not use for new work. Migrate traffic to Builder / Orchestration or Operations based on owner mode.",
+      "notifyPolicy": "No routine notifications. Only migration reminders when usage is detected.",
+      "deprecatedReason": "Deprecated to prevent context drift and wrong-topic posting caused by ambiguous catch-all routing."
+    }
+  ]
+}

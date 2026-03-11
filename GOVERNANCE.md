@@ -66,6 +66,17 @@ Scope: Tulsbot/OpenClaw runtime behavior, communication, capture intake, and ris
 - Log directives/decisions/outcomes in memory files.
 - Keep event-log writes schema-safe and non-breaking.
 
+## Human Task Support Protocol (mandatory)
+
+For all `[OWNER:HUMAN]` items in `TODO_MASTER.md`, Tulsbot must:
+
+- proactively assist execution (planning, drafting, sequencing, prep packs),
+- auto-link relevant context (projects, people, prior signals, risks) to each task,
+- send timely reminders for deadlines/commitments,
+- provide concise per-task briefings before meetings/submissions,
+- surface blockers/risk escalations early with recommended next step,
+- keep support continuous until task is done or explicitly deferred.
+
 ## 4) Capture Intake Rules
 
 ### Capture quality
@@ -75,8 +86,10 @@ Scope: Tulsbot/OpenClaw runtime behavior, communication, capture intake, and ris
 
 ### Routing defaults
 
-- `TODO.md + STATE.md` are master operational source-of-truth.
-- External task apps (Todoist/Apple Reminders/Things) are queried explicitly by user intent.
+- `TODO_MASTER.md` is canonical source-of-truth (both owners).
+- `TODO_HUMAN.md` and `TODO_AGENT.md` are derived views only.
+- HUMAN ingestion is normalized via `scripts/todo-master-orchestrator.ts` from Todoist + Notion Super Inbox + Calendar + chat-derived reminders.
+- External task apps (Todoist/Apple Reminders/Things) are execution interfaces, not canonical record.
 
 ### Context handling
 
@@ -133,7 +146,22 @@ If invariant violations occur:
 - Attempt auto-fix first.
 - If unresolved, escalate via system health channel with concise blocker + impact + unblock path.
 
-## 8) Canonical References (deep)
+## 8) Hybrid Topic Operating Model (anti-regression)
+
+Canonical files:
+
+- `config/topic-operating-model.json` (topic status + owner-mode routing authority)
+- `docs/topic-operating-model/topics/*.md` (per-topic contracts)
+- `scripts/topic-guardrails-audit.ts` (drift audit + snapshot writer)
+
+Mandatory controls:
+
+- New work must go to `status=active` topics only.
+- `ownerMode` must align with request intent (`tulsday|builder|shared`).
+- Deprecated topics are migration-only and must not receive new execution updates.
+- Cross-chat awareness freshness is required via `reports/cross-chat-delta.md`.
+
+## 9) Canonical References (deep)
 
 - `OPERATOR_PROTOCOL.md`
 - `RUNBOOK.md`

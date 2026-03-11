@@ -21,19 +21,50 @@ If errors: propose fixes. If idle: check task board for assigned work.
 
 ## Task Source-of-Truth Routing (Critical)
 
-When Tulio asks about "todo", "to-do list", "what's on the list", "priorities", or "what should we work on":
+When Tulio asks about todo lists, use `TODO_MASTER.md` as the single source of truth and filter by OWNER tag:
 
-1. Read `TODO.md` (master backlog) and `STATE.md` (current active threads) first.
-2. Treat workspace task files as canonical by default.
-3. Only query external task apps (Todoist/Apple Reminders/Things) when Tulio explicitly asks for that specific system.
+1. **"my to-do list" / "my plan" / "my priorities"**
+   - Show only `[OWNER:HUMAN]` items
+   - Do **not** include agent build/tooling items
+
+2. **"your to-do list" / "system backlog" / "what should you tackle next"**
+   - Show only `[OWNER:AGENT]` items
+   - Include internal build/tooling/automation items
+
+3. If ambiguous plain "todo": ask one clarifier:
+   - "Do you want your human list or my system/build list?"
 
 Routing defaults:
 
-- `TODO.md` + `STATE.md` = master operational task source
-- Todoist = execution inbox/sync data (secondary unless explicitly requested)
+- `TODO_MASTER.md` = canonical backlog (both owners)
+- `TODO.md` + `STATE.md` = supporting context only
+- HUMAN ingestion into `TODO_MASTER.md` is unified via `npx tsx scripts/todo-master-orchestrator.ts sync` (Todoist + Notion Super Inbox + Calendar + chat-derived reminders)
+- Todoist = execution inbox, but not canonical source-of-truth
 - Apple Reminders/Things = personal app views (opt-in only)
 
-Never replace the master TODO answer with Apple Reminders output unless Tulio asked for Apple Reminders specifically.
+## Topic Operating Model (Critical)
+
+Canonical sources:
+
+- `config/topic-operating-model.json`
+- `docs/topic-operating-model/topics/*.md`
+- `reports/topic-status-update.md`
+
+Rules:
+
+- Route only to `status=active` topics for new work.
+- Enforce `ownerMode` (`tulsday|builder|shared`) before posting updates.
+- Treat deprecated topics as migration-only. If referenced, redirect to active topic and log drift.
+- Run `pnpm tsx scripts/topic-guardrails-audit.ts` to produce anti-regression snapshots.
+
+## Mode Ownership Router (Critical)
+
+Default mode inference should not require explicit user mode commands:
+
+- `tulsday` mode owns human-domain execution (planning, commitments, follow-ups, meetings, inbox, reminders).
+- `builder` mode owns system/build execution (coding, architecture, automation, CI, infra, integrations).
+
+Use `npx tsx scripts/mode-router.ts "<request>"` for explicit checks, or rely on `shift-manager start` intent inference.
 
 See `GOVERNANCE.md` for unified policy on approvals, communication, capture, and risk controls.
 See `VISION.md` for identity, architecture, and all operational protocols.
