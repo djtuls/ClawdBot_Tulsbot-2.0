@@ -19,6 +19,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { withWorkspaceLease } from "./lib/workspace-lock";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -406,8 +407,15 @@ async function main() {
       results.push(result);
     }
 
-    await updateState(results, invariants);
-    await appendHistory(results);
+    const agent = process.env.OPENCLAW_AGENT_ID || process.env.OPENCLAW_AGENT || "main";
+    const lease = await withWorkspaceLease(repoRoot, agent, "hourly-heartbeat-write", async () => {
+      await updateState(results, invariants);
+      await appendHistory(results);
+    });
+
+    if (!lease.ok) {
+      console.warn(`⚠️ Heartbeat write skipped: ${lease.reason}`);
+    }
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     const failures = results.filter((r) => r.status === "failed");

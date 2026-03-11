@@ -6,6 +6,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { withWorkspaceLease } from "./lib/workspace-lock";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORKSPACE = path.resolve(__dirname, "..");
@@ -224,7 +225,10 @@ function buildReconciliationSnapshot(topology: SessionTopology) {
   };
 }
 
-async function buildState(): Promise<string> {
+async function buildState(): Promise<{
+  content: string;
+  snapshot: ReturnType<typeof buildReconciliationSnapshot>;
+}> {
   const [hb, priorities, threads, shift, topology] = await Promise.all([
     getHeartbeatHealth(),
     getPriorities(),
@@ -234,11 +238,6 @@ async function buildState(): Promise<string> {
   ]);
 
   const snapshot = buildReconciliationSnapshot(topology);
-  await fs.mkdir(path.join(WORKSPACE, "state"), { recursive: true });
-  await fs.writeFile(
-    path.join(WORKSPACE, "state", "session-reconciliation.json"),
-    JSON.stringify(snapshot, null, 2),
-  );
 
   const now = new Date();
   const timestamp = now.toLocaleString("en-AU", {
@@ -317,20 +316,36 @@ async function buildState(): Promise<string> {
     "",
   );
 
-  return lines.join("\n");
+  return { content: lines.join("\n"), snapshot };
 }
 
 async function main() {
   log("Refreshing STATE.md...");
-  const content = await buildState();
+  const { content, snapshot } = await buildState();
 
   if (DRY_RUN) {
     console.log(content);
     log("\n[DRY RUN — not written]");
-  } else {
-    await fs.writeFile(path.join(WORKSPACE, "STATE.md"), content);
-    log(`Written STATE.md (${content.split("\n").length} lines)`);
+    return;
   }
+
+  const agent = process.env.OPENCLAW_AGENT_ID || process.env.OPENCLAW_AGENT || "main";
+  const leased = await withWorkspaceLease(WORKSPACE, agent, "refresh-state", async () => {
+    await fs.mkdir(path.join(WORKSPACE, "state"), { recursive: true });
+    await fs.writeFile(
+      path.join(WORKSPACE, "state", "session-reconciliation.json"),
+      JSON.stringify(snapshot, null, 2),
+    );
+    await fs.writeFile(path.join(WORKSPACE, "STATE.md"), content);
+    return content.split("\n").length;
+  });
+
+  if (!leased.ok) {
+    log(`Skipped STATE.md write: ${leased.reason}`);
+    return;
+  }
+
+  log(`Written STATE.md (${leased.value} lines)`);
 }
 
 main().catch((err) => {
