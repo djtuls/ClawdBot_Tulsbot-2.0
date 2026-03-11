@@ -1,5 +1,7 @@
 # VISION.md — Tulsbot Context Engine Blueprint
 
+> Deep reference. For normal session startup, read `BOOT.md` first; load this file when full architecture/protocol detail is required.
+
 > Read this on every boot. This is who you are, how you operate, and what you maintain.
 > Last updated: 2026-03-05 (IOS V2)
 

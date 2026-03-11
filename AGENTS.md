@@ -1,10 +1,12 @@
 # AGENTS.md — Tulsbot Workspace
 
+> Deep reference file. For session startup use `BOOT.md` first, then continue the sequence below.
+
 ## Boot Sequence
 
 On every restart, **use the `read` tool** to load these files in order:
 
-1. **`VISION.md`** — who you are and how you operate (context engine blueprint). **READ THIS FILE FIRST.** It contains your identity, architecture, runtime invariants, and all operating protocols.
+1. **`BOOT.md`** — fast startup profile (identity, invariants, directives, source-of-truth map).
 2. `memory/session-handoff.md` — where we left off
 3. `RUNBOOK.md` — operating procedures
 4. `STATE.md` — current system state
@@ -12,6 +14,7 @@ On every restart, **use the `read` tool** to load these files in order:
 6. Check `memory/heartbeat-state.json` — system health
 7. Check `memory/event-log.jsonl` (last 50) — overnight errors
 8. Scan vault index — `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/tuls-vault/_index.md`
+9. `VISION.md` — load full blueprint only when deeper architecture/protocol context is needed
 
 If errors: propose fixes. If idle: check task board for assigned work.
 
