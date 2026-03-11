@@ -51,7 +51,8 @@ Prioritize correctness over speed, evidence over assumptions, and durable memory
 4. `TODO.md`
 5. `memory/heartbeat-state.json`
 6. `memory/event-log.jsonl` (tail)
-7. Vault index: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/tuls-vault/_index.md`
+7. `reports/cross-chat-delta.md` — cross-channel delta awareness snapshot
+8. Vault index: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/tuls-vault/_index.md`
 
 ## Deep References (load as needed)
 

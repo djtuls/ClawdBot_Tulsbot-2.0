@@ -245,6 +245,18 @@ const steps = [
     args: ["tsx", "scripts/build-context-window.ts"],
   },
   {
+    key: "crossChatIngest",
+    name: "Cross-chat awareness incremental ingest",
+    command: "bun",
+    args: ["scripts/cross-chat-awareness.ts", "once"],
+  },
+  {
+    key: "crossChatDelta",
+    name: "Cross-chat delta refresh",
+    command: "npx",
+    args: ["tsx", "scripts/cross-chat-delta.ts"],
+  },
+  {
     key: "calendarTriggers",
     name: "Calendar event trigger scan",
     command: "npx",

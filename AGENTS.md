@@ -13,8 +13,9 @@ On every restart, **use the `read` tool** to load these files in order:
 5. `TODO.md` — what to work on
 6. Check `memory/heartbeat-state.json` — system health
 7. Check `memory/event-log.jsonl` (last 50) — overnight errors
-8. Scan vault index — `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/tuls-vault/_index.md`
-9. `VISION.md` — load full blueprint only when deeper architecture/protocol context is needed
+8. Read `reports/cross-chat-delta.md` — latest cross-channel delta snapshot
+9. Scan vault index — `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/tuls-vault/_index.md`
+10. `VISION.md` — load full blueprint only when deeper architecture/protocol context is needed
 
 If errors: propose fixes. If idle: check task board for assigned work.
 
