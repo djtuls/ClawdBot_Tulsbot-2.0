@@ -244,6 +244,12 @@ const steps = [
     command: "npx",
     args: ["tsx", "scripts/build-context-window.ts"],
   },
+  {
+    key: "calendarTriggers",
+    name: "Calendar event trigger scan",
+    command: "npx",
+    args: ["tsx", "scripts/calendar/run-event-triggers.ts"],
+  },
 ];
 
 type StepResult = {

@@ -8,6 +8,7 @@ import "dotenv/config";
  */
 import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
+import { fetchUpcomingEvents } from "./lib/calendar-events.js";
 import { logEvent } from "./lib/event-logger.js";
 import { loadLifecycleSummary } from "./lib/project-lifecycle.js";
 import { build30SecondSection } from "./lib/report-quality.js";
@@ -181,6 +182,17 @@ async function main() {
       if (toReview.length > 5) {
         sections.push(`  ... and ${toReview.length - 5} more`);
       }
+    }
+  }
+
+  // Calendar snapshot (multi-account)
+  const events = fetchUpcomingEvents(2).slice(0, 6);
+  sections.push("\n🗓️ <b>Upcoming (next 48h)</b>");
+  if (!events.length) {
+    sections.push("• No upcoming events found across connected calendars.");
+  } else {
+    for (const e of events) {
+      sections.push(`• ${e.start} — ${e.summary} (${e.account})`);
     }
   }
 
