@@ -14,6 +14,7 @@ import { shouldBlockDirectSuperInboxSeed } from "../../src/integrations/capture-
 import { logEvent } from "../lib/event-logger.js";
 import { getSecret } from "../lib/secrets.js";
 import { sendToTopic, truncateForTelegram } from "../lib/telegram-notify.js";
+import { linkSignalFromPending } from "../vault/link-signal.js";
 import { decideGovernance, loadCaptureGovernance } from "./governance.js";
 
 const WORKSPACE =
@@ -342,6 +343,24 @@ async function main() {
       item.notionUrl = routeToNotionReview(item) || item.notionUrl;
       item.status = "awaiting-review";
       item.reviewedAt = new Date().toISOString();
+      try {
+        const linked = linkSignalFromPending(item);
+        logEvent({
+          source: "inbox-router",
+          action: "link-signal",
+          result: "ok",
+          detail: `signal=${linked.signalPath}`,
+          target: (item.subject || item.commitment || item.id || "item").slice(0, 80),
+        });
+      } catch (err: any) {
+        logEvent({
+          source: "inbox-router",
+          action: "link-signal",
+          result: "error",
+          detail: String(err?.message || err),
+          target: (item.subject || item.commitment || item.id || "item").slice(0, 80),
+        });
+      }
       routedToReview.push(item);
     }
     writePending(all);
@@ -399,12 +418,18 @@ async function main() {
       const ok = routeToTodoist(item);
       if (ok) {
         item.status = "routed";
+        try {
+          linkSignalFromPending(item);
+        } catch {}
         routeToEventLog(item);
       } else {
         remaining.push(item);
       }
     } else {
       item.status = "routed";
+      try {
+        linkSignalFromPending(item);
+      } catch {}
       routeToEventLog(item);
     }
   }
