@@ -400,6 +400,16 @@ openclaw status --deep
 
 # Mac Mini unreachable
 ssh tulioferro@100.100.5.125   # via Tailscale
+
+# Disaster Recovery (V2 cold standby)
+# 1) Mark mini inactive intentionally, then restore latest backup to laptop workspace
+npx tsx scripts/disaster-recovery/restore.ts --from-backup latest --mode local
+
+# 2) After mini is back, preview sync-back from V2 to mini
+npx tsx scripts/disaster-recovery/sync-back.ts
+
+# 3) Execute sync-back
+npx tsx scripts/disaster-recovery/sync-back.ts --execute
 ```
 
 ---
