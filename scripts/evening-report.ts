@@ -9,6 +9,7 @@ import "dotenv/config";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { logEvent } from "./lib/event-logger.js";
+import { build30SecondSection } from "./lib/report-quality.js";
 import { sendToTopic, truncateForTelegram } from "./lib/telegram-notify.js";
 
 const WORKSPACE =
@@ -30,15 +31,32 @@ async function main() {
     console.log("[reports] DISABLE_TELEGRAM_REPORTS=1, skipping telegram report send.");
     return;
   }
-  if (TELEGRAM_REPORTS_DISABLED) {
-    console.log("[reports] DISABLE_TELEGRAM_REPORTS=1, skipping telegram report send.");
-    return;
-  }
   console.log("[evening-report] Compiling evening digest...");
   const today = new Date().toISOString().split("T")[0];
   const sections: string[] = [];
 
   sections.push(`🌙 <b>Evening Report — ${today}</b>`);
+
+  const topTodo = readJsonSafe(join(DATA_DIR, "todoist-summary.json"));
+  const remaining = topTodo?.totalActive || 0;
+
+  sections.push(
+    ...build30SecondSection({
+      whatMatters: [
+        remaining > 0 ? `${remaining} tasks remain open tonight.` : "Task board is clear tonight.",
+      ],
+      whyItMatters: [
+        remaining > 0
+          ? "Carryover compounds tomorrow's load unless explicitly planned."
+          : "A clear board means you can start tomorrow from priorities, not leftovers.",
+      ],
+      whatToDo: [
+        remaining > 0
+          ? "Pick the top 1–3 carryover items and explicitly schedule them for tomorrow morning."
+          : "Protect tomorrow's first block for strategic work.",
+      ],
+    }),
+  );
 
   // Event log: today's activity
   const eventLogPath = join(WORKSPACE, "memory/event-log.jsonl");

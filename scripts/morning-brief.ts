@@ -9,6 +9,7 @@ import "dotenv/config";
 import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { logEvent } from "./lib/event-logger.js";
+import { build30SecondSection } from "./lib/report-quality.js";
 import { sendToTopic, truncateForTelegram } from "./lib/telegram-notify.js";
 
 const WORKSPACE =
@@ -31,15 +32,57 @@ async function main() {
     console.log("[reports] DISABLE_TELEGRAM_REPORTS=1, skipping telegram report send.");
     return;
   }
-  if (TELEGRAM_REPORTS_DISABLED) {
-    console.log("[reports] DISABLE_TELEGRAM_REPORTS=1, skipping telegram report send.");
-    return;
-  }
   console.log("[morning-brief] Compiling morning digest...");
   const today = new Date().toISOString().split("T")[0];
   const sections: string[] = [];
 
   sections.push(`☀️ <b>Good morning, Tulio — ${today}</b>`);
+
+  // 30-second test framing (lead with conclusion)
+  const topPendingPath = join(WORKSPACE, "memory/inbox/pending.jsonl");
+  let pendingCount = 0;
+  if (existsSync(topPendingPath)) {
+    const lines = readFileSync(topPendingPath, "utf-8").trim().split("\n").filter(Boolean);
+    pendingCount = lines
+      .map((l) => {
+        try {
+          return JSON.parse(l);
+        } catch {
+          return null;
+        }
+      })
+      .filter((i) => i && i.status === "pending").length;
+  }
+  const topTodo = readJsonSafe(join(DATA_DIR, "todoist-summary.json"));
+  const dueToday = topTodo?.dueToday?.length || 0;
+  const highPriority = topTodo?.highPriority?.length || 0;
+
+  sections.push(
+    ...build30SecondSection({
+      whatMatters: [
+        dueToday > 0 ? `${dueToday} tasks are due today.` : "No tasks due today.",
+        pendingCount > 0
+          ? `${pendingCount} inbox items still need routing.`
+          : "Inbox routing is currently clear.",
+      ],
+      whyItMatters: [
+        dueToday > 0
+          ? "Without early sequencing, today can become reactive."
+          : "Use the open window to push strategic work.",
+        pendingCount > 0
+          ? "Unrouted inbox items can hide urgent commitments."
+          : "Low inbox load means less context-switching overhead.",
+      ],
+      whatToDo: [
+        highPriority > 0
+          ? `Start with the top ${Math.min(highPriority, 3)} high-priority tasks before meetings.`
+          : "Lock one high-impact objective for the morning block.",
+        pendingCount > 0
+          ? "Run inbox routing pass before midday."
+          : "Maintain focus; avoid unnecessary intake churn.",
+      ],
+    }),
+  );
 
   // Todoist: today's tasks
   const todoist = readJsonSafe(join(DATA_DIR, "todoist-summary.json"));
