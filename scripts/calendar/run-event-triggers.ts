@@ -31,10 +31,7 @@ function minutesUntil(iso: string): number {
   return Math.floor((Date.parse(iso) - Date.now()) / 60000);
 }
 
-function bucket(mins: number): "24h" | "2h" | "30m" | null {
-  if (mins <= 24 * 60 && mins > 24 * 60 - 30) {
-    return "24h";
-  }
+function bucket(mins: number): "2h" | "30m" | null {
   if (mins <= 120 && mins > 90) {
     return "2h";
   }
@@ -50,6 +47,10 @@ function main() {
 
   let sent = 0;
   for (const e of events) {
+    // Skip all-day events by default (date-only start has no time component).
+    if (!e.start.includes("T")) {
+      continue;
+    }
     const mins = minutesUntil(e.start);
     const b = bucket(mins);
     if (!b) {

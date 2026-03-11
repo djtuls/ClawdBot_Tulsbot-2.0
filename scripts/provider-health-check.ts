@@ -318,6 +318,8 @@ async function sendAlert(message: string): Promise<void> {
 // ─── Digest ─────────────────────────────────────────────────────────────────
 
 async function sendDigest(state: HealthState): Promise<void> {
+  const anthropicDisabled =
+    process.env.DISABLE_ANTHROPIC === "1" || process.env.DISABLE_ANTHROPIC_PROBE === "1";
   const now = new Date();
   const thisHour = now.toISOString().slice(0, 13);
   const lastHour = new Date(now.getTime() - 3600_000).toISOString().slice(0, 13);
@@ -337,6 +339,9 @@ async function sendDigest(state: HealthState): Promise<void> {
         (s.rate_limits > 0 ? `, ${s.rate_limits} rate limits` : "") +
         (s.errors > 0 ? `, ${s.errors} errors` : ""),
     );
+  }
+  if (anthropicDisabled) {
+    lines.push("⏸️ *anthropic*: disabled (intentional)");
   }
   lines.push(`_${stats.hour}_`);
   await sendAlert(lines.join("\n"));
