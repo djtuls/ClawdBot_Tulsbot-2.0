@@ -88,12 +88,16 @@ async function probeOpenAICodex(): Promise<ProbeResult> {
 
 async function probeAnthropic(): Promise<ProbeResult> {
   const start = Date.now();
+  const apiKey = getSecret("ANTHROPIC_API_KEY") ?? env.ANTHROPIC_API_KEY ?? "";
+  if (!apiKey) {
+    return result("anthropic", "claude-3-5-haiku-latest", "error", 0, "missing_api_key");
+  }
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": env.ANTHROPIC_API_KEY ?? "",
+        "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
@@ -108,7 +112,14 @@ async function probeAnthropic(): Promise<ProbeResult> {
       return result("anthropic", "claude-3-5-haiku-latest", "rate_limited", latency);
     }
     if (!res.ok) {
-      return result("anthropic", "claude-3-5-haiku-latest", "error", latency, `${res.status}`);
+      let detail = `${res.status}`;
+      try {
+        const body = await res.text();
+        if (body) {
+          detail = `${res.status}:${body.slice(0, 180)}`;
+        }
+      } catch {}
+      return result("anthropic", "claude-3-5-haiku-latest", "error", latency, detail);
     }
     return result("anthropic", "claude-3-5-haiku-latest", "ok", latency);
   } catch (e) {
