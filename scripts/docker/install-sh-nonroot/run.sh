@@ -38,7 +38,7 @@ if [[ -z "$CMD_PATH" ]]; then
 fi
 echo "==> Verify CLI installed: $CLI_NAME"
 RAW_VERSION="$("$CMD_PATH" --version 2>/dev/null | head -n 1 | tr -d '\r')"
-INSTALLED_VERSION="$(printf '%s' "$RAW_VERSION" | sed -E 's/.*([0-9]+\.[0-9]+\.[0-9]+).*/\1/')"
+INSTALLED_VERSION="$(printf '%s' "$RAW_VERSION" | grep -oE '[0-9]{4}\.[0-9]+\.[0-9]+' | head -n1)"
 
 echo "cli=$CLI_NAME installed_raw=$RAW_VERSION installed=$INSTALLED_VERSION expected=$LATEST_VERSION"
 if [[ "$INSTALLED_VERSION" != "$LATEST_VERSION" ]]; then
