@@ -346,7 +346,13 @@ async function main(): Promise<void> {
   }
 
   console.log("[health] Probing providers...");
-  const probes = await Promise.all([probeAnthropic(), probeGoogle(), probeOpenAIDirect()]);
+  const disableAnthropic =
+    process.env.DISABLE_ANTHROPIC === "1" || process.env.DISABLE_ANTHROPIC_PROBE === "1";
+  const probes = await Promise.all(
+    [!disableAnthropic ? probeAnthropic() : null, probeGoogle(), probeOpenAIDirect()].filter(
+      Boolean,
+    ) as Array<Promise<ProbeResult>>,
+  );
 
   for (const p of probes) {
     const icon = p.status === "ok" ? "✓" : p.status === "rate_limited" ? "⚠" : "✗";
