@@ -142,6 +142,7 @@ async function main() {
 
   // System health snapshot
   const hubspot = readJsonSafe(join(DATA_DIR, "hubspot-summary.json"));
+  const serviceHealth = readJsonSafe(join(WORKSPACE, "state/service-health.json"));
   sections.push("\n⚙️ <b>System Status</b>");
   const syncs = [];
   if (todoist) {
@@ -156,6 +157,12 @@ async function main() {
     );
   }
   sections.push(syncs.join(" | "));
+
+  if (serviceHealth) {
+    sections.push(
+      `Services: ok ${serviceHealth.ok || 0} | warn ${serviceHealth.warn || 0} | error ${serviceHealth.error || 0}`,
+    );
+  }
 
   // Event log overnight errors
   const eventLogPath = join(WORKSPACE, "memory/event-log.jsonl");
