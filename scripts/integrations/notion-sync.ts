@@ -226,6 +226,23 @@ async function main() {
   // Write full summary
   writeFileSync(join(DATA_DIR, "notion-summary.json"), JSON.stringify(summary, null, 2));
 
+  // Meeting note integration (project/contact/action linkage)
+  try {
+    execFileSync("npx", ["tsx", "scripts/integrations/notion-meeting-integrator.ts"], {
+      cwd: WORKSPACE,
+      encoding: "utf-8",
+      stdio: "pipe",
+      timeout: 30_000,
+    });
+  } catch (err: any) {
+    logEvent({
+      source: "notion-sync",
+      action: "meeting-integrator",
+      result: "error",
+      detail: String(err?.message || err),
+    });
+  }
+
   const total =
     inftPages.length +
     gridPages.length +
