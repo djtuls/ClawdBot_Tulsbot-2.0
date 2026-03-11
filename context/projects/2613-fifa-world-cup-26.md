@@ -11,17 +11,20 @@ Sources: HubSpot, Notion
 - Notion status: Unknown
 - Last edited: 2026-02-26T20:03:00.000Z
 
+- Health: GREEN
+- Last interaction: 2026-03-11
+
 ## People
 
-- No contacts linked yet
+- [[kristen-weber]] — Senior Project Manager, Stadium Entertainment
 
 ## Open Items
 
-- No tasks linked
+- [ ]
 
 ## Recent Activity (7 days)
 
-- No recent activity logged
+- 2026-03-11: FWC2026 budget/finance context captured (context-only, no action item).
 
 ## Drive Folders
 
@@ -31,3 +34,7 @@ Sources: HubSpot, Notion
 ## Blockers
 
 - None identified
+
+## Decisions
+
+- None logged

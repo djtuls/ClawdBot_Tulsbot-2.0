@@ -11,17 +11,20 @@ Sources: HubSpot, Notion
 - Notion status: Unknown
 - Last edited: 2026-02-28T01:39:00.000Z
 
+- Health: GREEN
+- Last interaction: 2026-03-11
+
 ## People
 
-- No contacts linked yet
+- [[tara-myers]] — RWS producer (daily updates thread)
 
 ## Open Items
 
-- No tasks linked
+- [ ]
 
 ## Recent Activity (7 days)
 
-- No recent activity logged
+- 2026-03-11: Daily Updates 7 March context captured (thread participants mapped).
 
 ## Drive Folders
 
@@ -31,3 +34,7 @@ Sources: HubSpot, Notion
 ## Blockers
 
 - None identified
+
+## Decisions
+
+- None logged

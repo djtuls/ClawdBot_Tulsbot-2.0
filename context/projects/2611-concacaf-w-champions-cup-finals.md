@@ -11,17 +11,20 @@ Sources: HubSpot, Notion
 - Notion status: Unknown
 - Last edited: 2026-02-26T20:03:00.000Z
 
+- Health: GREEN
+- Last interaction: 2026-03-11
+
 ## People
 
-- No contacts linked yet
+- [[carlos]] — delivery owner (WCCC POC)
 
 ## Open Items
 
-- No tasks linked
+- [ ]
 
 ## Recent Activity (7 days)
 
-- No recent activity logged
+- 2026-03-11: WCCC infotainment POC context captured (Carlos → Alex inventory/deficiency follow-up).
 
 ## Drive Folders
 
@@ -31,3 +34,7 @@ Sources: HubSpot, Notion
 ## Blockers
 
 - None identified
+
+## Decisions
+
+- None logged

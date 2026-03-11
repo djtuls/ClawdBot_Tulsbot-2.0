@@ -11,13 +11,16 @@ Sources: HubSpot, Notion
 - Notion status: Unknown
 - Last edited: 2026-02-26T20:03:00.000Z
 
+- Health: RED
+- Last interaction: unknown
+
 ## People
 
 - No contacts linked yet
 
 ## Open Items
 
-- No tasks linked
+- [ ]
 
 ## Recent Activity (7 days)
 
@@ -25,4 +28,9 @@ Sources: HubSpot, Notion
 
 ## Blockers
 
-- None identified
+- No recent signals linked
+- No confirmed key people linked
+
+## Decisions
+
+- None logged

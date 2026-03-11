@@ -9,13 +9,16 @@ Sources: HubSpot
 - Close date: 2025-10-17T00:00:00Z
 - Last modified: 2026-03-08T22:20:37.442Z
 
+- Health: RED
+- Last interaction: unknown
+
 ## People
 
 - No contacts linked yet
 
 ## Open Items
 
-- No tasks linked
+- [ ]
 
 ## Recent Activity (7 days)
 
@@ -23,4 +26,9 @@ Sources: HubSpot
 
 ## Blockers
 
-- None identified
+- No recent signals linked
+- No confirmed key people linked
+
+## Decisions
+
+- None logged

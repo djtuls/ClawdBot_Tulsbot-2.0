@@ -11,17 +11,20 @@ Sources: HubSpot, Notion
 - Notion status: Unknown
 - Last edited: 2026-02-26T20:03:00.000Z
 
+- Health: GREEN
+- Last interaction: 2026-03-11
+
 ## People
 
-- No contacts linked yet
+- [[vadym-sklyaruk]] — content editor
 
 ## Open Items
 
-- No tasks linked
+- [ ]
 
 ## Recent Activity (7 days)
 
-- No recent activity logged
+- 2026-03-11: Blink proposal-scope context linked; project waiting for RFP result.
 
 ## Drive Folders
 
@@ -30,3 +33,7 @@ Sources: HubSpot, Notion
 ## Blockers
 
 - None identified
+
+## Decisions
+
+- None logged
