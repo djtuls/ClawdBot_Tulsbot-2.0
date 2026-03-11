@@ -343,9 +343,15 @@ async function main(): Promise<void> {
   }
 
   // Immediate alert for rate limits or down providers
+  // Temporary noise suppression: skip Anthropic-only degradation alerts unless explicitly enabled.
+  const anthropicAlertsEnabled = process.env.ENABLE_ANTHROPIC_ALERTS === "1";
   const degraded = probes.filter((p) => p.status !== "ok");
-  if (degraded.length > 0) {
-    const msg = degraded
+  const degradedForAlert = degraded.filter(
+    (p) => p.provider !== "anthropic" || anthropicAlertsEnabled,
+  );
+
+  if (degradedForAlert.length > 0) {
+    const msg = degradedForAlert
       .map(
         (p) => `• ${p.provider}: ${p.status}${p.error ? ` (${p.error})` : ""} — ${p.latency_ms}ms`,
       )

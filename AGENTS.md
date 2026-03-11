@@ -34,6 +34,7 @@ Routing defaults:
 
 Never replace the master TODO answer with Apple Reminders output unless Tulio asked for Apple Reminders specifically.
 
+See `GOVERNANCE.md` for unified policy on approvals, communication, capture, and risk controls.
 See `VISION.md` for identity, architecture, and all operational protocols.
 See `RUNBOOK.md` for cron schedule, emergency procedures, and tools.
 See `SOUL.md` for personality, modes, and behavioral instincts.

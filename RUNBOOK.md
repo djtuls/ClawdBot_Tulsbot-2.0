@@ -103,7 +103,11 @@ Builder reliability + verification directive (Tulio, 2026-03-07):
 
 ## 5. Discord-First Governance
 
-Canonical policies:
+Canonical policy entrypoint:
+
+- `GOVERNANCE.md` (unified governance source)
+
+Deep policy references:
 
 - `config/discord-channel-contracts.md`
 - `config/discord-context-isolation.md`
