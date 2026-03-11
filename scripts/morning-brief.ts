@@ -9,6 +9,7 @@ import "dotenv/config";
 import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { logEvent } from "./lib/event-logger.js";
+import { loadLifecycleSummary } from "./lib/project-lifecycle.js";
 import { build30SecondSection } from "./lib/report-quality.js";
 import { sendToTopic, truncateForTelegram } from "./lib/telegram-notify.js";
 
@@ -179,6 +180,24 @@ async function main() {
       }
       if (toReview.length > 5) {
         sections.push(`  ... and ${toReview.length - 5} more`);
+      }
+    }
+  }
+
+  // Lifecycle-aware project snapshot
+  const lifecycle = loadLifecycleSummary(WORKSPACE, 10);
+  if (lifecycle.length) {
+    sections.push("\n🧩 <b>Projects by Lifecycle</b>");
+    const groups = new Map<string, typeof lifecycle>();
+    for (const row of lifecycle) {
+      const arr = groups.get(row.lifecycle) || [];
+      arr.push(row);
+      groups.set(row.lifecycle, arr);
+    }
+    for (const [stage, items] of groups.entries()) {
+      sections.push(`\n<b>${stage.toUpperCase()}</b>`);
+      for (const p of items.slice(0, 3)) {
+        sections.push(`• ${p.code} (${p.health}): ${p.keySignal.slice(0, 90)}`);
       }
     }
   }
