@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-03-07T21:53:13.450Z",
+  "generatedAt": "2026-03-11T05:22:23.054Z",
   "objective": "Single-brain context across all sessions/channels",
   "canonicalBrain": "builder",
   "status": "PARTIAL",
   "metrics": {
-    "recentSessions48h": 187,
-    "builderRecentSessions48h": 6,
-    "mainRecentSessions48h": 179,
+    "recentSessions48h": 281,
+    "builderRecentSessions48h": 77,
+    "mainRecentSessions48h": 201,
     "channelsSeen": ["other"]
   },
   "actions": [

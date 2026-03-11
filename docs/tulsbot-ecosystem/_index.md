@@ -12,6 +12,7 @@ a
 
 - [[sops/SOP-001-document-production-pipeline.md]]
 - [[sops/SOP-002-mirror-and-publish-workflow.md]]
+- [[sops/SOP-004-implementation-plan-authoring.md]]
 - [[sops/SOP-TEMPLATE.md]]
 
 ## Plans

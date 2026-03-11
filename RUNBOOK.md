@@ -354,6 +354,13 @@ Build-location constraint (operator directive):
 
 ---
 
+## 10.1 State-First Governance (authoritative)
+
+- Canonical policy note: `tuls-vault/08_system/state-first-governance.md`
+- `STATE.md` is operational authority and must be ingested first by all agents.
+- Handoffs run 2x/day with full transcript capture + compliance audit + state refresh.
+- Ownership model is constrained to: `MINE | YOURS (HITL) | WAITING_ON_EXTERNAL`.
+
 ## 11. Writing & Communication Standards
 
 | Skill                 | Path                                  |

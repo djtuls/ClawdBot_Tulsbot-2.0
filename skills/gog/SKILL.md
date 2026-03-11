@@ -28,9 +28,9 @@ Use `gog` for Gmail/Calendar/Drive/Contacts/Sheets/Docs. Requires OAuth setup.
 
 Setup (once)
 
-- `gog auth credentials /path/to/client_secret.json`
-- `gog auth add you@gmail.com --services gmail,calendar,drive,contacts,docs,sheets`
-- `gog auth list`
+- Prefer **non-interactive env/secrets flow** for this workspace (Supabase-backed `.env`) and avoid macOS Keychain/Passwords prompts.
+- Do **not** run interactive auth flows on this deployment unless the user explicitly asks in-session.
+- Health check only: `gog auth list`
 
 Common commands
 

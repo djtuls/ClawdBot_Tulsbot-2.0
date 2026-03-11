@@ -14,6 +14,7 @@
 
 import fs from "fs";
 import path from "path";
+import { getSecret } from "./lib/secrets";
 
 const HOME = process.env.HOME ?? "/Users/tulioferro";
 const HEALTH_FILE = path.join(HOME, ".openclaw/workspace/memory/provider-health.json");
@@ -277,7 +278,7 @@ function updateHourlyStats(state: HealthState, probes: ProbeResult[]): void {
 // ─── Telegram ───────────────────────────────────────────────────────────────
 
 async function sendAlert(message: string): Promise<void> {
-  const token = env.TELEGRAM_BOT_TOKEN;
+  const token = getSecret("DJTULSBOT_TELEGRAM_TOKEN") ?? env.TELEGRAM_BOT_TOKEN;
   const chatId = env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) {
     console.warn("[health] Telegram not configured:", message.slice(0, 80));

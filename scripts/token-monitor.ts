@@ -13,6 +13,7 @@
 import { execFileSync } from "child_process";
 import { readFileSync, existsSync, watchFile, mkdirSync, appendFileSync } from "fs";
 import { join, dirname } from "path";
+import { getSecret } from "./lib/secrets";
 
 const HOME = process.env.HOME || "/Users/tulioferro";
 const CONTEXT_PATH = join(HOME, ".openclaw/workspace/reports/context-window.json");
@@ -53,7 +54,7 @@ function loadEnv(): void {
 }
 
 async function sendAlert(message: string): Promise<void> {
-  const token = env.TELEGRAM_BOT_TOKEN;
+  const token = getSecret("DJTULSBOT_TELEGRAM_TOKEN") ?? env.TELEGRAM_BOT_TOKEN;
   const chatId = env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) {
     console.warn("[token-monitor] Telegram not configured:", message.slice(0, 80));

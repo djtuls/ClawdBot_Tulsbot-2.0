@@ -12,6 +12,7 @@
 
 import fs from "fs";
 import path from "path";
+import { getSecret } from "./lib/secrets";
 
 const HOME = process.env.HOME ?? "/Users/tulioferro";
 const EVENTS_FILE = path.join(HOME, ".openclaw/workspace/memory/model-switch-events.jsonl");
@@ -50,7 +51,7 @@ function loadEnv(): void {
 }
 
 async function sendAlert(message: string): Promise<void> {
-  const token = env.TELEGRAM_BOT_TOKEN;
+  const token = getSecret("DJTULSBOT_TELEGRAM_TOKEN") ?? env.TELEGRAM_BOT_TOKEN;
   const chatId = env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) {
     console.log(message);

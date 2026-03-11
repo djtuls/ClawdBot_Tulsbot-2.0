@@ -1,0 +1,228 @@
+{
+  "_readme": "Auto-mapped from Google Drive Financial + OPS folders to Notion Project Grid.",
+  "_financialRoot": "https://drive.google.com/drive/folders/1VuRzudS1M2SutxS1u6fUSa6e06HuSBlq",
+  "_opsRoot": "https://drive.google.com/drive/folders/1GoTS-xbB2AGa9BQnq9ah2FL3SeXfOuAt",
+  "_lastUpdated": "2026-03-10T01:22:06.999Z",
+  "project-2026": {
+    "code": "2026",
+    "title": "Project 2026",
+    "financial": "https://drive.google.com/drive/folders/17FgaYM_n3Eh6gmX4OyNP181joPFQYKLc",
+    "section": "Active",
+    "lastModified": "2026-03-05T05:54:00.969Z"
+  },
+  "2504-afc-u17-asian-cup": {
+    "code": "2504",
+    "title": "2504_AFC U17 Asian Cup",
+    "financial": "https://drive.google.com/drive/folders/1Wrv6XgPDDJkmxx9cPyIRe5m4cy69XaD_",
+    "section": "Recon",
+    "lastModified": "2025-12-19T11:39:47.298Z"
+  },
+  "2505-afc-champions-league-elite-2024-25-q-final-to-final": {
+    "code": "2505",
+    "title": "2505_AFC Champions League Elite 2024/25 Q-Final to Final",
+    "financial": "https://drive.google.com/drive/folders/1X5pkpmfUpeZ-Yl47VTisdIhKkjvPUd0I",
+    "section": "Recon",
+    "lastModified": "2025-10-26T21:20:19.944Z"
+  },
+  "2510-w-champions-cup-final-2025": {
+    "code": "2510",
+    "title": "2510_W. Champions Cup Final 2025",
+    "financial": "https://drive.google.com/drive/folders/1-dmduMXFlevvTi5ZNyyeBRpVdy0rf_3K",
+    "section": "Recon",
+    "lastModified": "2026-03-08T18:11:22.899Z"
+  },
+  "2511-concacaf-champions-cup-2025": {
+    "code": "2511",
+    "title": "2511_Concacaf Champions Cup 2025",
+    "financial": "https://drive.google.com/drive/folders/1-enK_kCoIQIW3iuU3FNJiFsEL1vhJz_E",
+    "section": "Recon",
+    "lastModified": "2026-02-24T13:26:46.321Z"
+  },
+  "2512-concacaf-gold-cup-2025": {
+    "code": "2512",
+    "title": "2512_Concacaf gold Cup 2025",
+    "financial": "https://drive.google.com/drive/folders/1-ifDqcOqCMtPe7quyqSe_1xMQp_AoWTo",
+    "section": "Recon",
+    "lastModified": "2026-03-08T07:54:00.578Z"
+  },
+  "2513-fcwc-2025": {
+    "code": "2513",
+    "title": "2513_FCWC 2025",
+    "financial": "https://drive.google.com/drive/folders/1-ix6e6nFMImMgWWrQw4ST8xH18N8zxwm",
+    "section": "Recon",
+    "lastModified": "2026-02-07T06:19:29.735Z"
+  },
+  "2601-afc-u23-asian-cup": {
+    "code": "2601",
+    "title": "2601_AFC U23 Asian Cup",
+    "financial": "https://drive.google.com/drive/folders/1-H5bmEilIuV0FBwG-ul-0lhI2sqteAmd",
+    "section": "Recon",
+    "lastModified": "2026-02-27T05:46:45.578Z"
+  },
+  "2602-afc-futsal-asian-cup": {
+    "code": "2602",
+    "title": "2602_AFC Futsal Asian Cup",
+    "financial": "https://drive.google.com/drive/folders/1xsyE5bE7VpTpjReqVozWAJdv5Tt6r5DM",
+    "section": "Recon",
+    "lastModified": "2026-02-14T11:41:06.833Z"
+  },
+  "2603-afc-women-s-asian-cup": {
+    "code": "2603",
+    "title": "2603_AFC Women’s Asian Cup",
+    "financial": "https://drive.google.com/drive/folders/19y9_tZ1irhD5WFtcfORR6kETQso5WSEG",
+    "ops": "https://drive.google.com/drive/folders/1DnV8fE1c62CJGm1pTRKUeJpk9v6PhuKq",
+    "section": "Active",
+    "lastModified": "2026-02-28T07:30:15.251Z"
+  },
+  "2604-afc-u20-women-s-asian-cup": {
+    "code": "2604",
+    "title": "2604_AFC U20 Women’s Asian Cup",
+    "financial": "https://drive.google.com/drive/folders/1E_aw2hKzTg_wp1l7p6KqZ158ek8pd6zS",
+    "ops": "https://drive.google.com/drive/folders/1FlgCIUdOqb5GPHLm3IkSGZ6Bu3CSm5mM",
+    "section": "Active",
+    "lastModified": "2026-01-28T07:17:37.038Z"
+  },
+  "2605-afc-champions-league-elite-2025-26-q-final-to-final": {
+    "code": "2605",
+    "title": "2605_AFC Champions League Elite 2025/26 Q-Final to Final",
+    "financial": "https://drive.google.com/drive/folders/1U2gJTsvZ72G-jXQlgwMcAI-v1S08TAFB",
+    "ops": "https://drive.google.com/drive/folders/1G0Sne7949I7hGmH9seHfbbteFml82LRu",
+    "section": "Active",
+    "lastModified": "2026-02-27T22:01:23.727Z"
+  },
+  "2606-afc-women-s-u17-asian-cup": {
+    "code": "2606",
+    "title": "2606_AFC Women’s U17 Asian Cup",
+    "financial": "https://drive.google.com/drive/folders/1fq_E9Lqk0So7SFopdCnHRh0HlwgyIMGq",
+    "ops": "https://drive.google.com/drive/folders/1aIfZ-GQgcq01LJQuVINOyVimwpPM0hnP",
+    "section": "Active",
+    "lastModified": "2026-02-27T22:02:18.445Z"
+  },
+  "2607-afc-u17-asian-cup": {
+    "code": "2607",
+    "title": "2607_AFC U17 Asian Cup",
+    "financial": "https://drive.google.com/drive/folders/1cfPpO1zzGD6Eolnpqqw79nPuyxCmEYya",
+    "ops": "https://drive.google.com/drive/folders/1x3s7uHJ4-GP6WPoSkKZMh2KXUCP_wVZv",
+    "section": "Active",
+    "lastModified": "2026-02-27T22:04:36.960Z"
+  },
+  "2608-afc-challenge-league-2025-26-final": {
+    "code": "2608",
+    "title": "2608_AFC Challenge League 2025/26 Final",
+    "financial": "https://drive.google.com/drive/folders/1E-2Bi5OCpsiOpnAE6vvbCWoC4mZvRMyf",
+    "ops": "https://drive.google.com/drive/folders/1itdkOlaLqzcOLsb6za92ZV6Dasu7Cyrp",
+    "section": "Active",
+    "lastModified": "2026-02-27T22:05:40.403Z"
+  },
+  "2609-afc-champions-league-2-2025-26-final": {
+    "code": "2609",
+    "title": "2609_AFC Champions League 2 2025/26 Final",
+    "financial": "https://drive.google.com/drive/folders/1wjK-lwJ41T7m8jxkuse5E1oEAruQYXvA",
+    "ops": "https://drive.google.com/drive/folders/1m2mEV-59trX_9N3nU6nUqlb0lxj2HUK5",
+    "section": "Active",
+    "lastModified": "2026-02-27T22:06:06.885Z"
+  },
+  "2610-afc-women-s-champions-league-2025-26-s-final-and-final": {
+    "code": "2610",
+    "title": "2610_AFC Women’s Champions League 2025/26 S-Final and Final",
+    "financial": "https://drive.google.com/drive/folders/1ZgKvtrGOYSN0rDZb03ekiqzU_xRXzSRl",
+    "ops": "https://drive.google.com/drive/folders/1qhpA949ua0NgPisLRkfcdPDBm0mDSu-Z",
+    "section": "Active",
+    "lastModified": "2026-02-27T22:07:02.799Z"
+  },
+  "2611-concacaf-w-champions-cup-finals": {
+    "code": "2611",
+    "title": "2611_Concacaf W. Champions cup Finals",
+    "financial": "https://drive.google.com/drive/folders/1r5bKsI1D4aAxEXFh9H0Rn-xLgtqK-G_5",
+    "ops": "https://drive.google.com/drive/folders/1gUefy0Jkuio-wrUq_-PUS1faiYc1JVUJ",
+    "section": "Active",
+    "lastModified": "2026-03-08T18:11:28.880Z"
+  },
+  "2612-concacaf-champions-cup-final": {
+    "code": "2612",
+    "title": "2612_Concacaf Champions Cup Final",
+    "financial": "https://drive.google.com/drive/folders/18O7-X9DX_UvWoTYOtzkFKzUplxvugMTh",
+    "ops": "https://drive.google.com/drive/folders/1-CLrThhgQX6LUGddhawN7DsUrWfFVaQV",
+    "section": "Active",
+    "lastModified": "2026-02-27T22:09:55.038Z"
+  },
+  "2613-fifa-world-cup-26": {
+    "code": "2613",
+    "title": "2613_FIFA World Cup 26",
+    "financial": "https://drive.google.com/drive/folders/1kpIIU3JXVWbQpl0kH7xHTOoVJ_4Hpa2a",
+    "ops": "https://drive.google.com/drive/folders/1mrpC9gJTIugiSjKFz4nWriDnY6o7bSeH",
+    "section": "Active",
+    "lastModified": "2026-02-28T04:47:59.780Z"
+  },
+  "project-2614": {
+    "code": "2614",
+    "title": "Project 2614",
+    "financial": "https://drive.google.com/drive/folders/1d0Xu5igXfYzJzt6jTzxSvauP6ZHjPFo7",
+    "ops": "https://drive.google.com/drive/folders/16K40wDddbSW7Y5oxeGRIMDK4A_MLAlYU",
+    "section": "Active",
+    "lastModified": "2026-02-28T05:10:16.449Z"
+  },
+  "2615-match-for-hope": {
+    "code": "2615",
+    "title": "2615_Match For Hope",
+    "financial": "https://drive.google.com/drive/folders/1xYjdEaXeZagEDRefzA6TTXnXEDG7Ct1c",
+    "ops": "https://drive.google.com/drive/folders/1liuvagDIAE_AWGTrZtpu3HOPcBL-4tzf",
+    "section": "Recon",
+    "lastModified": "2026-03-03T11:52:03.611Z"
+  },
+  "2616-final-ssima-qatar-2026-qatar-football-festival": {
+    "code": "2616",
+    "title": "2616_ Finalíssima Qatar 2026/Qatar Football Festival",
+    "financial": "https://drive.google.com/drive/folders/1nLi4Hhd2ninNe-GukvL2G1mkJnCkMLFG",
+    "ops": "https://drive.google.com/drive/folders/1hQDiGlRftMNF-t9gI1pNnxt6TQFPhox5",
+    "section": "Active",
+    "lastModified": "2026-03-07T19:04:52.481Z"
+  },
+  "2701-afc-asian-cup": {
+    "code": "2701",
+    "title": "2701_AFC Asian Cup",
+    "financial": "https://drive.google.com/drive/folders/1kQQ53_TLDDJRCTCMuLPfwdGirwuyiyOk",
+    "section": "Active",
+    "lastModified": "2026-03-05T07:07:18.050Z"
+  },
+  "2026-2027-afc-rfp": {
+    "title": "*2026_2027 AFC RFP",
+    "financial": "https://drive.google.com/drive/folders/1Ndb9lSd-AqO4u3eHvr5xY3ifd08KR8UC",
+    "lastModified": "2026-03-03T06:54:55.418Z"
+  },
+  "temp": {
+    "title": "temp",
+    "financial": "https://drive.google.com/drive/folders/1EzfMA0z1J-QYUzwxEifObu8dSwAetec1",
+    "lastModified": "2025-12-30T12:39:39.040Z"
+  },
+  "2516-2518-qvision-qatar-nov-dec-2025": {
+    "title": "2516-2518_ Qvision Qatar Nov:Dec-2025",
+    "financial": "https://drive.google.com/drive/folders/1LnW96CAAeNoxqRti3QMPrEylTmdYyTXI",
+    "lastModified": "2026-03-03T07:02:13.879Z"
+  },
+  "resorces-ops": {
+    "title": "*Resorces_OPS",
+    "ops": "https://drive.google.com/drive/folders/10SDNR_epaNSC8w-hmoWHhNaJRPNmGAG4",
+    "lastModified": "2026-03-08T00:10:13.657Z"
+  },
+  "master-tracker": {
+    "title": "Master Tracker",
+    "ops": "https://drive.google.com/drive/folders/1NtaZbyDALCBr7Vxcd29YVWhOkXKB8vLu",
+    "lastModified": "2026-02-02T20:58:42.955Z"
+  },
+  "afc-le-planning-shared-folder": {
+    "title": "AFC_LE Planning_Shared Folder",
+    "ops": "https://drive.google.com/drive/folders/1KuQ8Skkb4nKQ1AT_u_32p7OOJWunhEBw",
+    "lastModified": "2026-01-24T07:08:36.087Z"
+  },
+  "files-templates": {
+    "title": "*Files_Templates",
+    "ops": "https://drive.google.com/drive/folders/12K5Hh7bVraFTxxKGiswfjOICG4vC2q0y",
+    "lastModified": "2026-01-08T12:55:02.834Z"
+  },
+  "folder-templates-to-duplicate": {
+    "title": "**Folder Templates (to Duplicate)",
+    "ops": "https://drive.google.com/drive/folders/1CGBrZG-UaugRY9KLYz4P4XBEbUlCZXaA",
+    "lastModified": "2025-09-11T13:40:42.650Z"
+  }
+}

@@ -94,17 +94,16 @@ Use for repeatable operational procedures.
 
 Use for roadmap items, implementation plans, and build proposals.
 
+**Mandatory procedure:** Follow `sops/SOP-004-implementation-plan-authoring.md` for all implementation plans. Use the same structure when writing plan summaries for Notion task pages.
+
 **Required sections:**
 
-1. Problem statement
-2. Goals and success metrics
-3. Constraints
-4. Options considered
-5. Chosen approach + rationale
-6. Dependencies
-7. Risks and mitigation
-8. Milestones and timeline
-9. Approval checklist
+1. Goals and objectives
+2. Resources needed
+3. Skills needed / used
+4. The plan (summary)
+5. Detailed plan (phases and subtasks)
+6. Approval checklist
 
 ## 4.4 Incident Document (`incidents/*`)
 

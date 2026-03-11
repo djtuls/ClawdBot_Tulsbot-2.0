@@ -1,0 +1,333 @@
+{
+  "senders": {
+    "@maybank.com.my": {
+      "CATEGORY_UPDATES": 14
+    },
+    "@team.twilio.com": {
+      "CATEGORY_PROMOTIONS": 6,
+      "CATEGORY_UPDATES": 6,
+      "CATEGORY_SOCIAL": 6
+    },
+    "@mail.wispr.ai": {
+      "CATEGORY_PROMOTIONS": 6,
+      "CATEGORY_UPDATES": 6
+    },
+    "@uber.com": {
+      "CATEGORY_UPDATES": 3
+    },
+    "@slack.com": {
+      "CATEGORY_UPDATES": 117
+    },
+    "@concacaf.org": {
+      "CATEGORY_PERSONAL": 1,
+      "CATEGORY_FORUMS": 13,
+      "CATEGORY_UPDATES": 13
+    },
+    "@rwsglobal.com": {
+      "CATEGORY_PERSONAL": 82,
+      "Action-Required": 26
+    },
+    "@teams.mail.microsoft": {
+      "CATEGORY_PERSONAL": 42
+    },
+    "@mail.gitlab.com": {
+      "CATEGORY_PROMOTIONS": 6
+    },
+    "@hbs.tv": {
+      "CATEGORY_PERSONAL": 1
+    },
+    "@genesistaxhouse.com": {
+      "CATEGORY_UPDATES": 17
+    },
+    "@stripe.com": {
+      "CATEGORY_UPDATES": 3,
+      "CATEGORY_PROMOTIONS": 1,
+      "Finances": 1
+    },
+    "@info.digitalocean.com": {
+      "CATEGORY_PROMOTIONS": 6,
+      "CATEGORY_UPDATES": 8
+    },
+    "@jusbrasil.com.br": {
+      "to-be-sorted": 60,
+      "CATEGORY_UPDATES": 4
+    },
+    "@astraapartments.com.au": {
+      "to-be-sorted": 21,
+      "action-required": 19
+    },
+    "@priority.instagram.com": {
+      "to-be-sorted": 25
+    },
+    "@membros.app.br": {
+      "to-be-sorted": 16
+    },
+    "@companyhero.com": {
+      "to-be-sorted": 18,
+      "CATEGORY_PROMOTIONS": 2
+    },
+    "@mp1.tripadvisor.com": {
+      "to-be-sorted": 101,
+      "CATEGORY_PROMOTIONS": 6
+    },
+    "@packdemusicas.com.br": {
+      "to-be-sorted": 44
+    },
+    "@hello.skyvern.com": {
+      "to-be-sorted": 17
+    },
+    "@nmsp.com.au": {
+      "to-be-sorted": 22
+    },
+    "@userede.com.br": {
+      "to-be-sorted": 16
+    },
+    "@e.meritonsuites.com.au": {
+      "to-be-sorted": 18
+    },
+    "@welcome.americanexpress.com": {
+      "to-be-sorted": 21,
+      "CATEGORY_UPDATES": 5
+    },
+    "@google.com": {
+      "action-required": 6,
+      "CATEGORY_UPDATES": 33
+    },
+    "@airbnb.com": {
+      "to-be-sorted": 6
+    },
+    "@mail.grammarly.com": {
+      "to-be-sorted": 12
+    },
+    "@mail.instagram.com": {
+      "to-be-sorted": 67,
+      "CATEGORY_SOCIAL": 11
+    },
+    "@email.meta.com": {
+      "to-be-sorted": 26,
+      "CATEGORY_PROMOTIONS": 7
+    },
+    "@contabilizei.com.br": {
+      "to-be-sorted": 34,
+      "action-required": 6,
+      "CATEGORY_UPDATES": 4,
+      "CATEGORY_PROMOTIONS": 1
+    },
+    "@djcity.com": {
+      "to-be-sorted": 29,
+      "CATEGORY_PROMOTIONS": 7
+    },
+    "@hello.rappi.com.mx": {
+      "to-be-sorted": 13,
+      "CATEGORY_PROMOTIONS": 1
+    },
+    "@news.hungerstation.com": {
+      "to-be-sorted": 3
+    },
+    "@email.claude.com": {
+      "to-be-sorted": 18
+    },
+    "@companyhub.com": {
+      "to-be-sorted": 7,
+      "CATEGORY_PROMOTIONS": 4
+    },
+    "@creativetoolsagency.com": {
+      "action-required": 3,
+      "CATEGORY_PERSONAL": 13
+    },
+    "@homeaffairs.gov.au": {
+      "action-required": 8
+    },
+    "@accounts.google.com": {
+      "to-be-sorted": 36,
+      "CATEGORY_UPDATES": 6
+    },
+    "@neuralframes.com": {
+      "to-be-sorted": 7,
+      "CATEGORY_PROMOTIONS": 1
+    },
+    "@hungerstation.com": {
+      "to-be-sorted": 24
+    },
+    "@notify.proton.me": {
+      "to-be-sorted": 12
+    },
+    "@softr.io": {
+      "to-be-sorted": 10,
+      "CATEGORY_UPDATES": 1,
+      "CATEGORY_PROMOTIONS": 3
+    },
+    "@alphatheta.com": {
+      "to-be-sorted": 3
+    },
+    "@notifications.imagine.art": {
+      "to-be-sorted": 6
+    },
+    "@trello.com": {
+      "to-be-sorted": 3,
+      "action-required": 1,
+      "CATEGORY_UPDATES": 1
+    },
+    "@aiautomationsociety.ai": {
+      "to-be-sorted": 5,
+      "CATEGORY_PROMOTIONS": 3
+    },
+    "@memberspace.com": {
+      "to-be-sorted": 2,
+      "CATEGORY_UPDATES": 1
+    },
+    "@make.com": {
+      "CATEGORY_PROMOTIONS": 5,
+      "to-be-sorted": 5
+    },
+    "@videobolt.net": {
+      "to-be-sorted": 1,
+      "CATEGORY_UPDATES": 1
+    },
+    "@instapaper.com": {
+      "to-be-sorted": 1,
+      "CATEGORY_UPDATES": 1
+    },
+    "@service.tiktok.com": {
+      "CATEGORY_PROMOTIONS": 5,
+      "to-be-sorted": 5
+    },
+    "@elfster.com": {
+      "to-be-sorted": 3,
+      "CATEGORY_UPDATES": 3
+    },
+    "@dj.studio": {
+      "CATEGORY_PROMOTIONS": 6,
+      "to-be-sorted": 6
+    },
+    "@email.intch.org": {
+      "CATEGORY_PROMOTIONS": 4,
+      "to-be-sorted": 4
+    },
+    "@fifa.org": {
+      "action-required": 9,
+      "CATEGORY_PERSONAL": 9
+    },
+    "@mail.glue.work": {
+      "CATEGORY_PROMOTIONS": 1,
+      "to-be-sorted": 1
+    },
+    "@pipedream.com": {
+      "CATEGORY_PROMOTIONS": 1,
+      "to-be-sorted": 1
+    },
+    "@zapsign.com.br": {
+      "to-be-sorted": 1,
+      "CATEGORY_UPDATES": 1
+    },
+    "@virginaustralia.com": {
+      "to-be-sorted": 15,
+      "CATEGORY_UPDATES": 1
+    },
+    "@questapartments.com.au": {
+      "to-be-sorted": 15
+    },
+    "@notify.cloudflare.com": {
+      "CATEGORY_UPDATES": 1
+    },
+    "@mail.cursor.com": {
+      "CATEGORY_PROMOTIONS": 13,
+      "CATEGORY_UPDATES": 13
+    },
+    "@the-afc.com": {
+      "CATEGORY_UPDATES": 29,
+      "CATEGORY_PERSONAL": 13
+    },
+    "@github.com": {
+      "CATEGORY_UPDATES": 8,
+      "CATEGORY_FORUMS": 4
+    },
+    "@e.read.ai": {
+      "CATEGORY_UPDATES": 13
+    },
+    "@realvnc.com": {
+      "CATEGORY_PROMOTIONS": 1
+    },
+    "@tailscale.com": {
+      "CATEGORY_PROMOTIONS": 9,
+      "CATEGORY_UPDATES": 21
+    },
+    "@hubspot.com": {
+      "CATEGORY_PROMOTIONS": 9,
+      "CATEGORY_UPDATES": 12
+    },
+    "@ifttt.com": {
+      "CATEGORY_PROMOTIONS": 5,
+      "CATEGORY_UPDATES": 5,
+      "CATEGORY_SOCIAL": 5
+    },
+    "@otter.ai": {
+      "CATEGORY_UPDATES": 13
+    },
+    "@womensasiancup2026.com.au": {
+      "CATEGORY_PERSONAL": 13
+    },
+    "@monday.com": {
+      "Action-Required": 26,
+      "CATEGORY_UPDATES": 90
+    },
+    "@email.americanexpress.com": {
+      "CATEGORY_UPDATES": 13
+    },
+    "@weareliveengine.com": {
+      "CATEGORY_PERSONAL": 60
+    },
+    "@gmail.com": {
+      "SENT": 26
+    },
+    "@termius.com": {
+      "CATEGORY_PROMOTIONS": 4,
+      "CATEGORY_UPDATES": 4
+    },
+    "@news.railway.app": {
+      "CATEGORY_PROMOTIONS": 4,
+      "CATEGORY_UPDATES": 4
+    },
+    "@learn.deepgram.com": {
+      "CATEGORY_PROMOTIONS": 4,
+      "CATEGORY_UPDATES": 4
+    },
+    "@insightsmr.org": {
+      "CATEGORY_PROMOTIONS": 4,
+      "CATEGORY_UPDATES": 4
+    },
+    "@discord.com": {
+      "CATEGORY_UPDATES": 1
+    },
+    "@eg.expedia.com": {
+      "CATEGORY_PROMOTIONS": 2
+    },
+    "@delaware.gov": {
+      "CATEGORY_UPDATES": 8
+    },
+    "@alerts.rbc.com": {
+      "CATEGORY_UPDATES": 8
+    },
+    "@send.relay.app": {
+      "CATEGORY_UPDATES": 8
+    },
+    "@wise.com": {
+      "CATEGORY_UPDATES": 1
+    },
+    "@canva.com": {
+      "CATEGORY_UPDATES": 7
+    },
+    "@fly.io": {
+      "CATEGORY_UPDATES": 7
+    },
+    "@mail.anthropic.com": {
+      "CATEGORY_UPDATES": 7
+    },
+    "@fwc2026.org": {
+      "CATEGORY_PERSONAL": 1
+    },
+    "@notifications.intuit.com": {
+      "CATEGORY_UPDATES": 1
+    }
+  }
+}

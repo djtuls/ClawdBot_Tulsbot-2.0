@@ -11,6 +11,7 @@
 
 import fs from "fs";
 import path from "path";
+import { getSecret } from "./lib/secrets";
 
 const HOME = process.env.HOME ?? "/Users/tulioferro";
 const GATEWAY_LOG = path.join(HOME, ".openclaw/logs/gateway.log");
@@ -108,7 +109,7 @@ function loadEnv(): void {
   } catch {
     /* env file not found */
   }
-  telegramToken ??= process.env.TELEGRAM_BOT_TOKEN;
+  telegramToken ??= getSecret("DJTULSBOT_TELEGRAM_TOKEN") ?? process.env.TELEGRAM_BOT_TOKEN;
   telegramChatId ??= process.env.TELEGRAM_CHAT_ID;
 }
 

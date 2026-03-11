@@ -126,7 +126,8 @@ function readCodexKeychainCredentials(options?: {
   execSync?: ExecSyncFn;
 }): CodexCliCredential | null {
   const platform = options?.platform ?? process.platform;
-  if (platform !== "darwin") {
+  // Workspace policy: avoid macOS Keychain-interactive reads unless explicitly re-enabled.
+  if (platform !== "darwin" || process.env.OPENCLAW_ALLOW_KEYCHAIN_READS !== "1") {
     return null;
   }
   const execSyncImpl = options?.execSync ?? execSync;
@@ -298,7 +299,12 @@ export function readClaudeCliCredentials(options?: {
   execSync?: ExecSyncFn;
 }): ClaudeCliCredential | null {
   const platform = options?.platform ?? process.platform;
-  if (platform === "darwin" && options?.allowKeychainPrompt !== false) {
+  // Workspace policy: default to non-Keychain mode on macOS unless explicitly opted in.
+  if (
+    platform === "darwin" &&
+    options?.allowKeychainPrompt === true &&
+    process.env.OPENCLAW_ALLOW_KEYCHAIN_READS === "1"
+  ) {
     const keychainCreds = readClaudeCliKeychainCredentials(options?.execSync);
     if (keychainCreds) {
       log.info("read anthropic credentials from claude cli keychain", {
@@ -383,6 +389,10 @@ export function writeClaudeCliKeychainCredentials(
   newCredentials: OAuthCredentials,
   options?: { execSync?: ExecSyncFn },
 ): boolean {
+  // Workspace policy: block Keychain writes unless explicitly re-enabled.
+  if (process.env.OPENCLAW_ALLOW_KEYCHAIN_READS !== "1") {
+    return false;
+  }
   const execSyncImpl = options?.execSync ?? execSync;
   try {
     const existingResult = execSyncImpl(

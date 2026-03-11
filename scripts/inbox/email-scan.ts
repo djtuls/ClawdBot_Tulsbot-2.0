@@ -8,7 +8,7 @@ import "dotenv/config";
  * - Send only action/uncertain items to inbox capture queue
  */
 import { execFileSync } from "child_process";
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "fs";
 import { join } from "path";
 import { logEvent } from "../lib/event-logger.js";
 import {
@@ -28,6 +28,7 @@ const GOG = process.env.GOG_BIN || "/opt/homebrew/bin/gog";
 const PENDING_PATH = join(WORKSPACE, "memory/inbox/pending.jsonl");
 const RULES_PATH = join(WORKSPACE, "memory/email-screen-rules.json");
 const HABITS_PATH = join(WORKSPACE, "data/email-label-habits.json");
+const LOCK_PATH = join(WORKSPACE, "memory/inbox/email-scan.lock");
 
 const ACCOUNTS = [
   "ferro.tulio@gmail.com",
@@ -41,6 +42,10 @@ const DAYS_ARG = process.argv.find((a) => a.startsWith("--days="));
 const LOOKBACK_DAYS = DAYS_ARG ? Math.max(1, Number(DAYS_ARG.split("=")[1]) || 2) : 2;
 const QUERY = BACKFILL ? "in:inbox" : `in:inbox is:unread newer_than:${LOOKBACK_DAYS}d`;
 const MAX = BACKFILL ? "500" : "40";
+const RUN_MAX_MS = Number(process.env.EMAIL_SCAN_MAX_MS || (BACKFILL ? 90_000 : 60_000));
+const ACCOUNT_FAIL_BUDGET = Number(process.env.EMAIL_SCAN_ACCOUNT_FAIL_BUDGET || 25);
+const MODIFY_FAIL_BUDGET = Number(process.env.EMAIL_SCAN_MODIFY_FAIL_BUDGET || 40);
+const LOCK_STALE_MS = Number(process.env.EMAIL_SCAN_LOCK_STALE_MS || 30 * 60_000);
 
 interface EmailMessage {
   id: string;
@@ -198,6 +203,49 @@ function modifyThread(account: string, threadId: string, add: string[], remove: 
   }
 }
 
+function acquireRunLock(): boolean {
+  try {
+    if (existsSync(LOCK_PATH)) {
+      try {
+        const lock = JSON.parse(readFileSync(LOCK_PATH, "utf-8")) as { ts?: string; pid?: number };
+        const lockAge = Date.now() - new Date(lock.ts || 0).getTime();
+        if (Number.isFinite(lockAge) && lockAge < LOCK_STALE_MS) {
+          logEvent({
+            source: "email-scan",
+            action: "lock-skip",
+            result: "ok",
+            detail: `existing lock pid=${lock.pid ?? "unknown"} ageMs=${lockAge}`,
+          });
+          return false;
+        }
+      } catch {
+        // stale/corrupt lock file; overwrite below
+      }
+    }
+    writeFileSync(
+      LOCK_PATH,
+      JSON.stringify({ pid: process.pid, ts: new Date().toISOString() }, null, 2),
+    );
+    return true;
+  } catch (err: any) {
+    logEvent({
+      source: "email-scan",
+      action: "lock-error",
+      result: "error",
+      detail: String(err?.message || err),
+    });
+    return false;
+  }
+}
+
+function releaseRunLock(): void {
+  try {
+    if (existsSync(LOCK_PATH)) {
+      unlinkSync(LOCK_PATH);
+    }
+  } catch {}
+}
+
 function captureHabit(msg: EmailMessage, managedLabels: Set<string>) {
   const labels = msg.labels.filter((l) => !managedLabels.has(l));
   if (labels.length === 0) {
@@ -221,6 +269,12 @@ function captureHabit(msg: EmailMessage, managedLabels: Set<string>) {
 }
 
 async function main() {
+  if (!acquireRunLock()) {
+    console.log("[email-scan] skipped (existing active lock)");
+    return;
+  }
+
+  const startedAt = Date.now();
   const rules = loadRules();
   const managedLabels = new Set([
     "INBOX",
@@ -243,7 +297,31 @@ async function main() {
   let keptReview = 0;
   const reviewList: EmailMessage[] = [];
 
-  for (const account of ACCOUNTS) {
+  const accountFilter = process.env.GOG_ACCOUNT?.trim();
+  const accounts = accountFilter ? ACCOUNTS.filter((a) => a === accountFilter) : ACCOUNTS;
+  if (accounts.length === 0) {
+    logEvent({
+      source: "email-scan",
+      action: "account-filter-empty",
+      result: "error",
+      detail: `GOG_ACCOUNT=${accountFilter}`,
+    });
+    releaseRunLock();
+    return;
+  }
+
+  let totalModifyFailures = 0;
+  for (const account of accounts) {
+    if (Date.now() - startedAt > RUN_MAX_MS) {
+      logEvent({
+        source: "email-scan",
+        action: "runtime-cap-hit",
+        result: "ok",
+        detail: `runMaxMs=${RUN_MAX_MS} scanned=${scanned} archived=${archived} action=${keptAction} review=${keptReview}`,
+      });
+      break;
+    }
+
     // Ensure managed labels exist on each account
     ensureLabel(account, rules.managedLabels.action);
     ensureLabel(account, rules.managedLabels.review);
@@ -253,8 +331,25 @@ async function main() {
 
     const messages = scanAccount(account);
     scanned += messages.length;
+    let accountModifyFailures = 0;
 
     for (const msg of messages) {
+      if (Date.now() - startedAt > RUN_MAX_MS) {
+        break;
+      }
+      if (
+        accountModifyFailures >= ACCOUNT_FAIL_BUDGET ||
+        totalModifyFailures >= MODIFY_FAIL_BUDGET
+      ) {
+        logEvent({
+          source: "email-scan",
+          action: "failure-budget-hit",
+          target: account,
+          result: "error",
+          detail: `accountFail=${accountModifyFailures}/${ACCOUNT_FAIL_BUDGET} totalFail=${totalModifyFailures}/${MODIFY_FAIL_BUDGET}`,
+        });
+        break;
+      }
       const threadKey = buildThreadKey("gmail", msg.account, msg.threadId || msg.id);
       const messageKey = buildMessageKey("gmail", msg.account, msg.id);
       const hash = hashItem("email", messageKey);
@@ -285,10 +380,17 @@ async function main() {
             detail: `label=${d.label} rule=${d.rule}`,
             rollback: `gog gmail thread modify ${msg.id} --account ${msg.account} --add INBOX`,
           });
+        } else {
+          accountModifyFailures++;
+          totalModifyFailures++;
         }
       } else if (d.type === "keep-action") {
         keptAction++;
-        modifyThread(account, msg.id, [d.label], []);
+        const ok = modifyThread(account, msg.id, [d.label], []);
+        if (!ok) {
+          accountModifyFailures++;
+          totalModifyFailures++;
+        }
         appendFileSync(
           PENDING_PATH,
           JSON.stringify({
@@ -304,7 +406,11 @@ async function main() {
       } else {
         keptReview++;
         reviewList.push(msg);
-        modifyThread(account, msg.id, [d.label], []);
+        const ok = modifyThread(account, msg.id, [d.label], []);
+        if (!ok) {
+          accountModifyFailures++;
+          totalModifyFailures++;
+        }
         appendFileSync(
           PENDING_PATH,
           JSON.stringify({
@@ -347,9 +453,11 @@ async function main() {
   console.log(
     `[email-scan] done scanned=${scanned} archived=${archived} action=${keptAction} review=${keptReview} backfill=${BACKFILL}`,
   );
+  releaseRunLock();
 }
 
 main().catch((err) => {
+  releaseRunLock();
   console.error("[email-scan] Fatal error:", err);
   logEvent({ source: "email-scan", action: "fatal", result: "error", detail: String(err) });
   process.exit(1);

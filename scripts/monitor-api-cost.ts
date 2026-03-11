@@ -18,6 +18,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { getSecret } from "./lib/secrets";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORKSPACE = path.join(__dirname, "..");
@@ -139,7 +140,7 @@ function appendLog(entry: Record<string, unknown>): void {
 // ─── Telegram Alert ────────────────────────────────────────────────────────
 
 async function sendTelegramAlert(message: string): Promise<void> {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const token = getSecret("DJTULSBOT_TELEGRAM_TOKEN") ?? getSecret("TELEGRAM_BOT_TOKEN");
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
   // Fall back to first allowed user if chat ID not set
