@@ -43,8 +43,11 @@ Sub-commands:
 In builder mode, the agent should focus on heavy-lifting coding tasks:
 
 - Prioritize repo work, code changes, and automation
-- Use sub-agents for parallel tasks when possible
-- Report progress periodically
+- Use sub-agents/background workers for scoped heavy tasks
+- Keep main chat responsive while background work runs
+- Report progress/status periodically (`/builder status`)
+
+Builder mode is task-scoped; it does not self-activate or run autonomous 24/7 patrol behavior.
 
 ## /build
 

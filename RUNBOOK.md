@@ -81,23 +81,20 @@ One agent, multiple behavioral modes. Switch via Telegram command.
 
 Subagent policy: up to 8 concurrent subagents. Use them freely for parallel work. Always report what subagents returned.
 
-Autonomous execution directive (Tulio, 2026-03-07):
+Execution directive (updated 2026-03-11):
 
-- For every approved plan/task, Builder must execute phases proactively end-to-end without waiting for extra prompts.
-- Continue autonomously through all phases until completion.
-- Stop only when a true blocker exists (missing permission/credential/external dependency/explicit conflict).
-- On blocker, notify Tulio immediately with: blocker, impact, required decision, and fastest unblock option.
-- Maintain progress in the same task page (phase, done, blockers, next step, ETA) on every meaningful change and in daily recap.
+- Main remains the single persistent brain and foreground chat owner.
+- Builder mode is task-scoped only (invoked by explicit user request or delegated scoped task), not an always-on autonomous patrol loop.
+- For approved scoped tasks, execution may run end-to-end in background workers while main stays responsive in foreground chat.
+- Stop only on true blockers (missing permission/credential/external dependency/conflict), then notify with: blocker, impact, required decision, fastest unblock.
+- Maintain progress status with evidence-backed updates (source path, timestamp, run context).
 
-Builder reliability + verification directive (Tulio, 2026-03-07):
+Reliability + verification directive:
 
-- Builder must continuously patrol repo/tasks/chats/requests/ideas and proactively pick up safe actionable work 24/7.
-- No stale or recycled logs may be reported as fresh status.
-- Every report must include freshness checks and evidence-backed status (source path, timestamp, and run context).
-- Before reporting completion, Builder must run audit/test/probe steps proportional to task risk.
-- If verification fails or data confidence is low, mark as uncertain and investigate before reporting as done.
-- Builder owns carryover prevention: no request/task/idea can be left untracked.
-- Blocked tasks must be surfaced immediately to Tulio with explicit unblock request.
+- No stale or recycled logs reported as fresh status.
+- Before reporting completion, run verification proportional to task risk.
+- If verification fails or confidence is low, mark uncertain and investigate before reporting done.
+- Background workers are stateless/scoped and must not independently own canonical shared-state decisions.
 
 ---
 
