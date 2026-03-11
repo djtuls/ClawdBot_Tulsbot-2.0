@@ -290,16 +290,25 @@ function updateHourlyStats(state: HealthState, probes: ProbeResult[]): void {
 
 async function sendAlert(message: string): Promise<void> {
   const token = getSecret("DJTULSBOT_TELEGRAM_TOKEN") ?? env.TELEGRAM_BOT_TOKEN;
-  const chatId = env.TELEGRAM_CHAT_ID;
+  const chatId = env.TELEGRAM_HEALTH_CHAT_ID ?? env.TELEGRAM_CHAT_ID;
+  const threadId = env.TELEGRAM_HEALTH_THREAD_ID;
   if (!token || !chatId) {
     console.warn("[health] Telegram not configured:", message.slice(0, 80));
     return;
   }
   try {
+    const body: Record<string, unknown> = {
+      chat_id: chatId,
+      text: message,
+      parse_mode: "Markdown",
+    };
+    if (threadId && /^-?\d+$/.test(threadId)) {
+      body.message_thread_id = Number(threadId);
+    }
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: "Markdown" }),
+      body: JSON.stringify(body),
     });
   } catch (e) {
     console.error("[health] Telegram error:", e);
