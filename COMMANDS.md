@@ -39,12 +39,14 @@ Sub-commands:
 - `/builder start` → `npx tsx scripts/shift-manager.ts start builder`
 - `/builder status` → `npx tsx scripts/builder-task-manager.ts status`
 - `/builder cancel <id>` → `npx tsx scripts/builder-task-manager.ts cancel <id> --notes "cancelled by user"`
+- `/builder dispatch "<title>" [--details "..."]` → `npx tsx scripts/builder-dispatch.ts "<title>" --details "..."`
 - `/builder end` → `npx tsx scripts/shift-manager.ts end`
 
 In builder mode, the agent should focus on heavy-lifting coding tasks:
 
 - Prioritize repo work, code changes, and automation
 - Use sub-agents/background workers for scoped heavy tasks
+- Route heavy tasks through `scripts/builder-dispatch.ts` (classify + register + emit worker spec)
 - Register background work in `state/background-tasks.json` via `scripts/builder-task-manager.ts`
 - Keep main chat responsive while background work runs
 - Report progress/status periodically (`/builder status`)
