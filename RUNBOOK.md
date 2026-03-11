@@ -15,16 +15,16 @@ Tulsbot is an autonomous context engine and operational partner. See `VISION.md`
 | Self-Healing   | Runtime invariants verified every heartbeat; auto-fix or alert |
 | Proactive      | Capture inbox, sync pipelines, councils, notification batching |
 
-| Service         | Purpose                                                     |
-| --------------- | ----------------------------------------------------------- |
-| Discord         | Primary operations surface (canonical execution channels)   |
-| Telegram        | Ingress + backup only; mirror to Discord canonical channels |
-| HubSpot         | CRM source of truth — contacts, deals, pipeline             |
-| Notion          | INFT_Hub operations — projects, team, deliverables          |
-| Todoist         | Daily planning — priorities, quick capture, inbox           |
-| Obsidian        | Long-term knowledge graph — vault with wiki links           |
-| Mission Control | Custom dashboard (Next.js on Mac Mini :3000)                |
-| Ollama          | Local models on Mac Mini                                    |
+| Service         | Purpose                                                       |
+| --------------- | ------------------------------------------------------------- |
+| Telegram        | Primary operations surface (DM-first)                         |
+| Discord         | Dormant/archived operations surface (kept intact, no routing) |
+| HubSpot         | CRM source of truth — contacts, deals, pipeline               |
+| Notion          | INFT_Hub operations — projects, team, deliverables            |
+| Todoist         | Daily planning — priorities, quick capture, inbox             |
+| Obsidian        | Long-term knowledge graph — vault with wiki links             |
+| Mission Control | Custom dashboard (Next.js on Mac Mini :3000)                  |
+| Ollama          | Local models on Mac Mini                                      |
 
 ---
 
@@ -98,7 +98,7 @@ Reliability + verification directive:
 
 ---
 
-## 5. Discord-First Governance
+## 5. Telegram DM-First Governance (Discord Dormant)
 
 Canonical policy entrypoint:
 
@@ -118,7 +118,7 @@ Operating rules:
 2. Cross-context references require explicit `context-link:` marker.
 3. Protected channels (`daily-standup`, `inbox-capture`, `builder`, `research`, `daily-reports`, `tulsday`) are no-touch for move/rename/delete unless explicitly approved.
 4. Risky outbound actions are draft-only using `APPROVE <id>` / `REJECT <id>`.
-5. Telegram is ingress/backup path; operational execution routes to Discord canonical channels.
+5. Telegram DM is the operational execution surface; Discord routing is paused (dormant archive mode).
 
 ### 5.1 Email Send Governance (Operator Directive — 2026-03-07)
 
@@ -160,27 +160,27 @@ Stale memory is a P1 issue.
 
 ## 6. Cron Schedule (all times America/Sao_Paulo BRT)
 
-| Schedule             | Job                   | Script                           | Output                                              |
-| -------------------- | --------------------- | -------------------------------- | --------------------------------------------------- |
-| Every 60 min         | Heartbeat hourly      | `run-heartbeat-hourly.ts`        | Invariant checks, state refresh                     |
-| Every 30 min (7-20h) | Email scan            | `inbox/email-scan.ts`            | → Inbox Review topic                                |
-| Every 60 min         | Todoist sync          | `integrations/todoist-sync.ts`   | Daily memory update                                 |
-| Every 4 hours        | HubSpot sync          | `integrations/hubspot-sync.ts`   | → CRM topic (changes)                               |
-| Every 4 hours        | Notion sync           | `integrations/notion-sync.ts`    | → INFT Ops topic (changes)                          |
-| 4:00 AM              | Heartbeat daily       | `run-heartbeat-daily.ts`         | Memory sync, backup                                 |
-| 6:00 AM              | Morning brief         | `morning-brief.ts`               | → Discord `#daily-standup` (Telegram backup mirror) |
-| 6:15 AM              | Provider health check | `provider-health-check.ts`       | → Discord `#system-status` (issues only)            |
-| 9:00 AM              | WhatsApp scan         | `inbox/whatsapp-scan.ts`         | → Discord `#inbox-capture` (triage to `#requests`)  |
-| 12:00 PM             | Midday sync           | `midday-sync.ts`                 | → Discord `#daily-standup`                          |
-| 6:00 PM              | Evening report        | `evening-report.ts`              | → Discord `#daily-reports`                          |
-| 10:00 PM             | Plaud processing      | `inbox/plaud-process.ts`         | → Discord `#research`/`#tasks` by routing policy    |
-| 10:00 PM             | Nightly maintenance   | `nightly-maintenance.ts`         | → Discord `#heartbeat-reports`                      |
-| 11:00 PM             | Security scan         | `security-scan.ts`               | → Discord `#system-status` (issues only)            |
-| 1:00 AM              | Master indexer        | `indexer/run-indexer.ts`         | KB indexing + summary to `#heartbeat-reports`       |
-| 2:00 AM              | Log rotation          | `rotate-event-log.ts`            | Rotate event-log.jsonl                              |
-| 3:00 AM              | Operations Council    | `councils/operations-council.ts` | → Discord `#daily-reports`                          |
-| 4:00 AM              | Platform Council      | `councils/platform-council.ts`   | → Discord `#heartbeat-reports`                      |
-| Mon 9 AM             | Weekly review         | `weekly-review.ts`               | → Discord `#daily-reports`                          |
+| Schedule             | Job                   | Script                           | Output                                     |
+| -------------------- | --------------------- | -------------------------------- | ------------------------------------------ |
+| Every 60 min         | Heartbeat hourly      | `run-heartbeat-hourly.ts`        | Invariant checks, state refresh            |
+| Every 30 min (7-20h) | Email scan            | `inbox/email-scan.ts`            | DM batch routing context                   |
+| Every 60 min         | Todoist sync          | `integrations/todoist-sync.ts`   | Daily memory update                        |
+| Every 4 hours        | HubSpot sync          | `integrations/hubspot-sync.ts`   | DM summary on meaningful changes           |
+| Every 4 hours        | Notion sync           | `integrations/notion-sync.ts`    | DM summary on meaningful changes           |
+| 4:00 AM              | Heartbeat daily       | `run-heartbeat-daily.ts`         | Memory sync, backup                        |
+| 6:00 AM              | Morning brief         | `morning-brief.ts`               | Telegram DM                                |
+| 6:15 AM              | Provider health check | `provider-health-check.ts`       | Telegram DM / alerts channel (issues only) |
+| 9:00 AM              | WhatsApp scan         | `inbox/whatsapp-scan.ts`         | Telegram DM triage summary                 |
+| 12:00 PM             | Midday sync           | `midday-sync.ts`                 | Telegram DM                                |
+| 6:00 PM              | Evening report        | `evening-report.ts`              | Telegram DM                                |
+| 10:00 PM             | Plaud processing      | `inbox/plaud-process.ts`         | Telegram DM summary                        |
+| 10:00 PM             | Nightly maintenance   | `nightly-maintenance.ts`         | Telegram DM (issues only)                  |
+| 11:00 PM             | Security scan         | `security-scan.ts`               | Telegram DM / alerts channel (issues only) |
+| 1:00 AM              | Master indexer        | `indexer/run-indexer.ts`         | KB indexing + summary in DM                |
+| 2:00 AM              | Log rotation          | `rotate-event-log.ts`            | Rotate event-log.jsonl                     |
+| 3:00 AM              | Operations Council    | `councils/operations-council.ts` | Telegram DM summary                        |
+| 4:00 AM              | Platform Council      | `councils/platform-council.ts`   | Telegram DM summary                        |
+| Mon 9 AM             | Weekly review         | `weekly-review.ts`               | Telegram DM                                |
 
 ---
 

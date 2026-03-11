@@ -5,6 +5,9 @@ import { join } from "path";
 const WORKSPACE =
   process.env.WORKSPACE_DIR || join(process.env.HOME || "/Users/tulioferro", ".openclaw/workspace");
 const TOPICS_PATH = join(WORKSPACE, "data/telegram-topics.json");
+const PRIMARY_DM_CHAT_ID =
+  process.env.OPENCLAW_PRIMARY_DM_CHAT_ID || process.env.TELEGRAM_CHAT_ID || "7026267103";
+const ALERT_CHAT_ID = process.env.TELEGRAM_ALERT_CHAT_ID || PRIMARY_DM_CHAT_ID;
 
 interface TopicConfig {
   groupId: string;
@@ -60,24 +63,38 @@ export function sendToTopic(
 ): boolean {
   const cfg = getConfig();
   const token = getBotToken();
-  if (!cfg || !token) {
-    console.error("[telegram] Missing topic config or bot token");
+  if (!token) {
+    console.error("[telegram] Missing bot token");
     return false;
   }
 
-  const topicInfo = cfg.topics[topic];
-  if (!topicInfo) {
-    console.error(`[telegram] Unknown topic: ${topic}`);
-    return false;
-  }
+  // DM-first policy: route all operational notifications to primary DM.
+  // Optional dedicated alert channel can receive system_health.
+  const chatId = topic === "system_health" ? ALERT_CHAT_ID : PRIMARY_DM_CHAT_ID;
+  const useLegacyTopicRouting = process.env.TELEGRAM_USE_TOPIC_ROUTING === "1";
 
   try {
-    const body = JSON.stringify({
-      chat_id: cfg.groupId,
-      message_thread_id: topicInfo.id,
-      text,
-      parse_mode: parseMode,
-    });
+    let body: string;
+
+    if (useLegacyTopicRouting && cfg) {
+      const topicInfo = cfg.topics[topic];
+      if (!topicInfo) {
+        console.error(`[telegram] Unknown topic: ${topic}`);
+        return false;
+      }
+      body = JSON.stringify({
+        chat_id: cfg.groupId,
+        message_thread_id: topicInfo.id,
+        text,
+        parse_mode: parseMode,
+      });
+    } else {
+      body = JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: parseMode,
+      });
+    }
 
     const result = execFileSync(
       "curl",
@@ -97,7 +114,7 @@ export function sendToTopic(
     const data = JSON.parse(result);
     return data.ok === true;
   } catch (err: any) {
-    console.error(`[telegram] Failed to send to ${topic}:`, err.message);
+    console.error(`[telegram] Failed to send (${topic}):`, err.message);
     return false;
   }
 }

@@ -33,8 +33,9 @@ Scope: Tulsbot/OpenClaw runtime behavior, communication, capture intake, and ris
 
 ### Surface priority
 
-- Discord = canonical operational execution surface.
-- Telegram = ingress + backup.
+- Telegram DM = canonical operational execution surface.
+- Optional Telegram alerts channel = P0/P1 incidents only.
+- Discord = dormant/archived for now (no active automation routing).
 
 ### Email authority
 
@@ -81,7 +82,9 @@ Scope: Tulsbot/OpenClaw runtime behavior, communication, capture intake, and ris
 
 - Context-only captures are valid and should be stored durably when no action is needed.
 
-## 5) Discord Governance Contracts
+## 5) Discord Governance Contracts (Dormant Archive)
+
+Discord contracts are retained as archived references while Discord routing is paused.
 
 ### Context isolation
 

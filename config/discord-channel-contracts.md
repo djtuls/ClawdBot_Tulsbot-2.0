@@ -1,4 +1,6 @@
-# Discord Channel Contracts
+# [ARCHIVED] Discord Channel Contracts
+
+> Archived on 2026-03-11: Discord operational routing is dormant. Retained for future reactivation.
 
 Guild: `1469708768173363343`
 

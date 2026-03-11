@@ -1,4 +1,6 @@
-# Discord Routing Conventions (Guild 1469708768173363343)
+# [ARCHIVED] Discord Routing Conventions (Guild 1469708768173363343)
+
+> Archived on 2026-03-11: Discord operational routing is dormant. Retained for future reactivation.
 
 ## Canonical Routing
 

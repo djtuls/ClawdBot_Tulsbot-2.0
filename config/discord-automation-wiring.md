@@ -1,4 +1,6 @@
-# Discord Automation Wiring Plan (Phase 4)
+# [ARCHIVED] Discord Automation Wiring Plan (Phase 4)
+
+> Archived on 2026-03-11: Discord operational routing is dormant. Retained for future reactivation.
 
 ## Objective
 

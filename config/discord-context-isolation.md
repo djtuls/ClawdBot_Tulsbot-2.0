@@ -1,4 +1,6 @@
-# Discord Context Isolation Policy
+# [ARCHIVED] Discord Context Isolation Policy
+
+> Archived on 2026-03-11: Discord operational routing is dormant. Retained for future reactivation.
 
 ## Scope
 
