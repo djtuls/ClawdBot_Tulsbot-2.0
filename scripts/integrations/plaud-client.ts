@@ -58,7 +58,45 @@ export async function listRecentRecordings(limit = 20): Promise<PlaudRecording[]
   }));
 }
 
-// Placeholder until we capture exact transcript endpoint from Network.
-export async function getTranscriptRaw(_recordingId: string): Promise<string | null> {
-  return null;
+function formatTranscriptRows(rows: any[]): string {
+  return rows
+    .map((r) => {
+      const s = Number(r?.start_time || 0);
+      const mm = Math.floor(s / 60000);
+      const ss = Math.floor((s % 60000) / 1000)
+        .toString()
+        .padStart(2, "0");
+      const speaker = String(r?.speaker || r?.original_speaker || "Speaker");
+      const content = String(r?.content || "").trim();
+      return `[${mm}:${ss}] ${speaker}: ${content}`;
+    })
+    .filter((x) => x.length > 0)
+    .join("\n");
+}
+
+export async function getTranscriptRaw(recordingId: string): Promise<string | null> {
+  const res = await fetch(`https://${domain()}/ai/transsumm/${recordingId}`, {
+    method: "POST",
+    headers: {
+      authorization: authHeader(),
+      "app-platform": "web",
+      "edit-from": "web",
+      accept: "application/json, text/plain, */*",
+      "content-type": "application/json;charset=UTF-8",
+      "app-language": "en",
+      timezone: "Australia/Sydney",
+    } as any,
+    body: JSON.stringify({}),
+  } as any);
+
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
+  }
+  const payload = text ? JSON.parse(text) : null;
+  const rows = Array.isArray(payload?.data_result) ? payload.data_result : [];
+  if (!rows.length) {
+    return null;
+  }
+  return formatTranscriptRows(rows);
 }
